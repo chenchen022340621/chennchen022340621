@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态数据可视化图表</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-viz {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            padding: 12px 20px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .btn-viz:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+        }
+        .btn-viz.active {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+        }
+        .info-panel {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        canvas {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-center mb-4">
+            <h1 class="display-4">动态数据可视化图表</h1>
+            <p class="lead">点击下方按钮查看不同的交互式图表</p>
+        </div>
+        
+        <!-- 按钮组 -->
+        <div class="d-flex flex-wrap justify-content-center mb-4">
+            <button type="button" class="btn btn-viz active" onclick="showChart('line')">
+                <span>📈</span> 折线图
+            </button>
+            <button type="button" class="btn btn-viz" onclick="showChart('bar')">
+                <span>📊</span> 柱形图
+            </button>
+            <button type="button" class="btn btn-viz" onclick="showChart('horizontal-bar')">
+                <span>📋</span> 条形图
+            </button>
+            <button type="button" class="btn btn-viz" onclick="showChart('pie')">
+                <span>🥧</span> 饼图
+            </button>
+            <button type="button" class="btn btn-viz" onclick="showChart('doughnut')">
+                <span>🍩</span> 环形图
+            </button>
+            <button type="button" class="btn btn-viz" onclick="showChart('radar')">
+                <span>📡</span> 雷达图
+            </button>
+        </div>
+
+        <!-- 图表展示区域 -->
+        <div class="chart-container">
+            <canvas id="chartCanvas"></canvas>
+        </div>
+        
+        <!-- 信息面板 -->
+        <div class="info-panel text-center">
+            <h4 id="currentChartName">折线图</h4>
+            <p id="currentChartDescription" class="mb-0">
+                折线图用于显示数据随时间或有序类别的变化趋势。它通过将一系列数据点连接起来形成线条，直观地展示数据的上升或下降趋势。
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let currentChart = null;
+
+        // 图表描述信息
+        const chartDescriptions = {
+            line: "折线图用于显示数据随时间或有序类别的变化趋势。它通过将一系列数据点连接起来形成线条，直观地展示数据的上升或下降趋势。",
+            bar: "柱形图使用垂直柱子来比较不同类别的数据值。柱子高度表示数值大小，适用于比较离散的数据。",
+            "horizontal-bar": "条形图是柱形图的水平版本，使用水平条来比较不同类别的数据值。条的长度表示数值大小。",
+            pie: "饼图显示各部分占整体的比例关系。每个扇区的大小表示其在整体中的百分比，适用于展示构成关系。",
+            doughnut: "环形图是饼图的变体，中间有一个圆形切口，同样用于显示各部分占整体的比例关系。",
+            radar: "雷达图显示多变量数据，每个变量在从同一点开始的轴上进行表示。适用于比较多个项目的多个特性。"
+        };
+        
+        // 图表名称映射
+        const chartNames = {
+            line: "折线图",
+            bar: "柱形图",
+            "horizontal-bar": "条形图",
+            pie: "饼图",
+            doughnut: "环形图",
+            radar: "雷达图"
+        };
+
+        function showChart(chartType) {
+            // 更新按钮激活状态
+            document.querySelectorAll('.btn-viz').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 更新图表名称和描述
+            document.getElementById('currentChartName').textContent = chartNames[chartType];
+            document.getElementById('currentChartDescription').textContent = chartDescriptions[chartType];
+            
+            // 销毁现有图表
+            if (currentChart) {
+                currentChart.destroy();
+            }
+            
+            // 创建新图表
+            const ctx = document.getElementById('chartCanvas').getContext('2d');
+            currentChart = createChart(ctx, chartType);
+        }
+
+        // 页面加载时默认显示折线图
+        window.onload = function() {
+            showChart('line');
+        };
+
+        // 图表创建函数
+        function createChart(ctx, type) {
+            switch(type) {
+                case 'line':
+                    return new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                            datasets: [{
+                                label: '销售额',
+                                data: [65, 59, 80, 81, 56, 55],
+                                borderColor: 'rgb(75, 192, 192)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'top', labels: { color: 'white' } },
+                                title: { display: true, text: '月度销售趋势', color: 'white' }
+                            },
+                            scales: {
+                                x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                                y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                            }
+                        }
+                    });
+                case 'bar':
+                    return new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['产品A', '产品B', '产品C', '产品D', '产品E'],
+                            datasets: [{
+                                label: '销售量',
+                                data: [12, 19, 3, 5, 2],
+                                backgroundColor: 'rgba(255, 99, 132, 0.8)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'top', labels: { color: 'white' } },
+                                title: { display: true, text: '产品销售量', color: 'white' }
+                            },
+                            scales: {
+                                x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                                y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                            }
+                        }
+                    });
+                case 'horizontal-bar':
+                    return new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['部门A', '部门B', '部门C', '部门D', '部门E'],
+                            datasets: [{
+                                label: '绩效得分',
+                                data: [85, 92, 78, 65, 88],
+                                backgroundColor: 'rgba(54, 162, 235, 0.8)'
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'top', labels: { color: 'white' } },
+                                title: { display: true, text: '部门绩效', color: 'white' }
+                            },
+                            scales: {
+                                x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                                y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                            }
+                        }
+                    });
+                case 'pie':
+                    return new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['电子产品', '服装', '食品', '家居', '图书'],
+                            datasets: [{
+                                data: [35, 25, 20, 15, 5],
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.8)',
+                                    'rgba(54, 162, 235, 0.8)',
+                                    'rgba(255, 206, 86, 0.8)',
+                                    'rgba(75, 192, 192, 0.8)',
+                                    'rgba(153, 102, 255, 0.8)'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { position: 'top', labels: { color: 'white' } },
+                                title: { display: true, text: '销售构成', color: 'white' }
+                            }
+                        }
+                    });
+                default:
+                    return createChart(ctx, 'line');
+            }
+        }
+    </script>
+</body>
+</html>
