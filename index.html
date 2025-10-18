@@ -3,25 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>动态数据可视化图表</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>动态数据可视化图表展示</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --text-color: white;
+        }
+        
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            color: white;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            color: var(--text-color);
             min-height: 100vh;
             padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
         .chart-container {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--card-bg);
             backdrop-filter: blur(10px);
             border-radius: 15px;
-            padding: 30px;
+            padding: 25px;
             margin-top: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
         }
+        
+        .chart-container:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
+        }
+        
         .btn-viz {
             background: rgba(255, 255, 255, 0.15);
             border: none;
@@ -30,35 +52,65 @@
             padding: 12px 20px;
             margin: 5px;
             transition: all 0.3s ease;
+            font-weight: 500;
         }
+        
         .btn-viz:hover {
             background: rgba(255, 255, 255, 0.25);
             transform: translateY(-3px);
         }
+        
         .btn-viz.active {
             background: rgba(255, 255, 255, 0.3);
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
         }
+        
         .info-panel {
             background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
+            padding: 20px;
             border-radius: 10px;
-            margin-top: 20px;
+            margin-top: 25px;
         }
+        
         canvas {
             max-width: 100%;
             border-radius: 10px;
+        }
+        
+        .chart-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .btn-viz {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .chart-container {
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="text-center mb-4">
-            <h1 class="display-4">动态数据可视化图表</h1>
-            <p class="lead">点击下方按钮查看不同的交互式图表</p>
+        <div class="header">
+            <h1 class="display-4 mb-3">动态数据可视化图表</h1>
+            <p class="lead">点击下方按钮查看不同的交互式图表，支持实时数据展示</p>
         </div>
         
-        <!-- 按钮组 -->
+        <!-- 图表类型选择 -->
         <div class="d-flex flex-wrap justify-content-center mb-4">
             <button type="button" class="btn btn-viz active" onclick="showChart('line')">
                 <span>📈</span> 折线图
@@ -82,41 +134,321 @@
 
         <!-- 图表展示区域 -->
         <div class="chart-container">
+            <h3 class="chart-title" id="chartTitle">折线图</h3>
             <canvas id="chartCanvas"></canvas>
         </div>
         
-        <!-- 信息面板 -->
-        <div class="info-panel text-center">
+        <!-- 图表信息面板 -->
+        <div class="info-panel">
             <h4 id="currentChartName">折线图</h4>
             <p id="currentChartDescription" class="mb-0">
                 折线图用于显示数据随时间或有序类别的变化趋势。它通过将一系列数据点连接起来形成线条，直观地展示数据的上升或下降趋势。
             </p>
         </div>
+        
+        <div class="footer">
+            <p>数据可视化展示 &copy; 2024 | 使用 Chart.js 构建</p>
+        </div>
     </div>
 
     <script>
+        // 全局变量
         let currentChart = null;
-
-        // 图表描述信息
-        const chartDescriptions = {
-            line: "折线图用于显示数据随时间或有序类别的变化趋势。它通过将一系列数据点连接起来形成线条，直观地展示数据的上升或下降趋势。",
-            bar: "柱形图使用垂直柱子来比较不同类别的数据值。柱子高度表示数值大小，适用于比较离散的数据。",
-            "horizontal-bar": "条形图是柱形图的水平版本，使用水平条来比较不同类别的数据值。条的长度表示数值大小。",
-            pie: "饼图显示各部分占整体的比例关系。每个扇区的大小表示其在整体中的百分比，适用于展示构成关系。",
-            doughnut: "环形图是饼图的变体，中间有一个圆形切口，同样用于显示各部分占整体的比例关系。",
-            radar: "雷达图显示多变量数据，每个变量在从同一点开始的轴上进行表示。适用于比较多个项目的多个特性。"
-        };
         
-        // 图表名称映射
-        const chartNames = {
-            line: "折线图",
-            bar: "柱形图",
-            "horizontal-bar": "条形图",
-            pie: "饼图",
-            doughnut: "环形图",
-            radar: "雷达图"
+        // 图表配置数据
+        const chartConfig = {
+            line: {
+                name: "折线图",
+                description: "折线图用于显示数据随时间或有序类别的变化趋势。它通过将一系列数据点连接起来形成线条，直观地展示数据的上升或下降趋势。",
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'],
+                    datasets: [
+                        {
+                            label: '产品A销售额',
+                            data: [65, 59, 80, 81, 56, 55, 40, 75],
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: '产品B销售额',
+                            data: [28, 48, 40, 19, 86, 27, 90, 60],
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: 'white' }
+                        },
+                        title: {
+                            display: true,
+                            text: '月度销售趋势分析',
+                            color: 'white',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            },
+            bar: {
+                name: "柱形图",
+                description: "柱形图使用垂直柱子来比较不同类别的数据值。柱子高度表示数值大小，适用于比较离散的数据。",
+                data: {
+                    labels: ['产品A', '产品B', '产品C', '产品D', '产品E'],
+                    datasets: [{
+                        label: '销售量',
+                        data: [12, 19, 8, 15, 7],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(255, 99, 132)',
+                            'rgb(54, 162, 235)',
+                            'rgb(255, 206, 86)',
+                            'rgb(75, 192, 192)',
+                            'rgb(153, 102, 255)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: 'white' }
+                        },
+                        title: {
+                            display: true,
+                            text: '产品销售量对比',
+                            color: 'white',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            },
+            'horizontal-bar': {
+                name: "条形图",
+                description: "条形图是柱形图的水平版本，使用水平条来比较不同类别的数据值。条的长度表示数值大小。",
+                data: {
+                    labels: ['部门A', '部门B', '部门C', '部门D', '部门E'],
+                    datasets: [{
+                        label: '绩效得分',
+                        data: [85, 92, 78, 65, 88],
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                        borderColor: 'rgb(54, 162, 235)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: 'white' }
+                        },
+                        title: {
+                            display: true,
+                            text: '部门绩效排名',
+                            color: 'white',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            },
+            pie: {
+                name: "饼图",
+                description: "饼图显示各部分占整体的比例关系。每个扇区的大小表示其在整体中的百分比，适用于展示构成关系。",
+                data: {
+                    labels: ['电子产品', '服装', '食品', '家居', '图书'],
+                    datasets: [{
+                        data: [35, 25, 20, 15, 5],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(255, 99, 132)',
+                            'rgb(54, 162, 235)',
+                            'rgb(255, 206, 86)',
+                            'rgb(75, 192, 192)',
+                            'rgb(153, 102, 255)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: 'white' }
+                        },
+                        title: {
+                            display: true,
+                            text: '销售构成分析',
+                            color: 'white',
+                            font: { size: 16 }
+                        }
+                    }
+                }
+            },
+            doughnut: {
+                name: "环形图",
+                description: "环形图是饼图的变体，中间有一个圆形切口，同样用于显示各部分占整体的比例关系。",
+                data: {
+                    labels: ['研发', '市场', '销售', '行政', '财务'],
+                    datasets: [{
+                        data: [30, 25, 20, 15, 10],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(255, 99, 132)',
+                            'rgb(54, 162, 235)',
+                            'rgb(255, 206, 86)',
+                            'rgb(75, 192, 192)',
+                            'rgb(153, 102, 255)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: 'white' }
+                        },
+                        title: {
+                            display: true,
+                            text: '部门预算分配',
+                            color: 'white',
+                            font: { size: 16 }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            },
+            radar: {
+                name: "雷达图",
+                description: "雷达图显示多变量数据，每个变量在从同一点开始的轴上进行表示。适用于比较多个项目的多个特性。",
+                data: {
+                    labels: ['技术能力', '沟通能力', '团队合作', '创新能力', '解决问题', '学习能力'],
+                    datasets: [
+                        {
+                            label: '员工A',
+                            data: [85, 90, 70, 95, 80, 75],
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgb(255, 99, 132)',
+                            pointBackgroundColor: 'rgb(255, 99, 132)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(255, 99, 132)'
+                        },
+                        {
+                            label: '员工B',
+                            data: [70, 85, 90, 75, 95, 80],
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgb(54, 162, 235)',
+                            pointBackgroundColor: 'rgb(54, 162, 235)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(54, 162, 235)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: 'white' }
+                        },
+                        title: {
+                            display: true,
+                            text: '员工能力评估',
+                            color: 'white',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(255,255,255,0.2)'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.2)'
+                            },
+                            pointLabels: {
+                                color: 'white',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            ticks: {
+                                color: 'white',
+                                backdropColor: 'transparent',
+                                stepSize: 20
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            }
         };
 
+        // 显示图表函数
         function showChart(chartType) {
             // 更新按钮激活状态
             document.querySelectorAll('.btn-viz').forEach(btn => {
@@ -124,9 +456,11 @@
             });
             event.target.classList.add('active');
             
-            // 更新图表名称和描述
-            document.getElementById('currentChartName').textContent = chartNames[chartType];
-            document.getElementById('currentChartDescription').textContent = chartDescriptions[chartType];
+            // 更新图表信息
+            const config = chartConfig[chartType];
+            document.getElementById('currentChartName').textContent = config.name;
+            document.getElementById('currentChartDescription').textContent = config.description;
+            document.getElementById('chartTitle').textContent = config.name;
             
             // 销毁现有图表
             if (currentChart) {
@@ -135,117 +469,40 @@
             
             // 创建新图表
             const ctx = document.getElementById('chartCanvas').getContext('2d');
-            currentChart = createChart(ctx, chartType);
+            
+            // 根据图表类型确定图表种类
+            let chartTypeName = chartType;
+            if (chartType === 'horizontal-bar') {
+                chartTypeName = 'bar';
+            }
+            
+            currentChart = new Chart(ctx, {
+                type: chartTypeName,
+                data: config.data,
+                options: config.options
+            });
         }
 
         // 页面加载时默认显示折线图
         window.onload = function() {
             showChart('line');
+            
+            // 添加一些交互效果
+            const buttons = document.querySelectorAll('.btn-viz');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.transform = 'translateY(-3px)';
+                    }
+                });
+                
+                button.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.transform = 'translateY(0)';
+                    }
+                });
+            });
         };
-
-        // 图表创建函数
-        function createChart(ctx, type) {
-            switch(type) {
-                case 'line':
-                    return new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
-                            datasets: [{
-                                label: '销售额',
-                                data: [65, 59, 80, 81, 56, 55],
-                                borderColor: 'rgb(75, 192, 192)',
-                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                tension: 0.1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                legend: { position: 'top', labels: { color: 'white' } },
-                                title: { display: true, text: '月度销售趋势', color: 'white' }
-                            },
-                            scales: {
-                                x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                                y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                            }
-                        }
-                    });
-                case 'bar':
-                    return new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['产品A', '产品B', '产品C', '产品D', '产品E'],
-                            datasets: [{
-                                label: '销售量',
-                                data: [12, 19, 3, 5, 2],
-                                backgroundColor: 'rgba(255, 99, 132, 0.8)'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                legend: { position: 'top', labels: { color: 'white' } },
-                                title: { display: true, text: '产品销售量', color: 'white' }
-                            },
-                            scales: {
-                                x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                                y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                            }
-                        }
-                    });
-                case 'horizontal-bar':
-                    return new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['部门A', '部门B', '部门C', '部门D', '部门E'],
-                            datasets: [{
-                                label: '绩效得分',
-                                data: [85, 92, 78, 65, 88],
-                                backgroundColor: 'rgba(54, 162, 235, 0.8)'
-                            }]
-                        },
-                        options: {
-                            indexAxis: 'y',
-                            responsive: true,
-                            plugins: {
-                                legend: { position: 'top', labels: { color: 'white' } },
-                                title: { display: true, text: '部门绩效', color: 'white' }
-                            },
-                            scales: {
-                                x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                                y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                            }
-                        }
-                    });
-                case 'pie':
-                    return new Chart(ctx, {
-                        type: 'pie',
-                        data: {
-                            labels: ['电子产品', '服装', '食品', '家居', '图书'],
-                            datasets: [{
-                                data: [35, 25, 20, 15, 5],
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.8)',
-                                    'rgba(54, 162, 235, 0.8)',
-                                    'rgba(255, 206, 86, 0.8)',
-                                    'rgba(75, 192, 192, 0.8)',
-                                    'rgba(153, 102, 255, 0.8)'
-                                ]
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                legend: { position: 'top', labels: { color: 'white' } },
-                                title: { display: true, text: '销售构成', color: 'white' }
-                            }
-                        }
-                    });
-                default:
-                    return createChart(ctx, 'line');
-            }
-        }
     </script>
 </body>
 </html>
