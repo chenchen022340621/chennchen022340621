@@ -19,6 +19,7 @@
             min-height: 100vh;
             padding: 20px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden; /* 防止水平滚动 */
         }
         
         .header {
@@ -33,6 +34,11 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
         .chart-container {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
@@ -42,6 +48,8 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden; /* 防止内容溢出 */
         }
         
         .chart-container:hover {
@@ -58,6 +66,7 @@
             margin: 5px;
             transition: all 0.3s ease;
             font-weight: 500;
+            white-space: nowrap; /* 防止按钮文字换行 */
         }
         
         .btn-viz:hover {
@@ -77,8 +86,15 @@
             margin-top: 20px;
         }
         
-        canvas {
+        .chart-wrapper {
+            height: 400px; /* 固定图表容器高度 */
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .chart-wrapper canvas {
             max-width: 100%;
+            max-height: 100%;
             border-radius: 10px;
         }
         
@@ -115,6 +131,7 @@
             font-size: 14px;
             background: rgba(255,255,255,0.1);
             color: white;
+            box-sizing: border-box; /* 确保padding不会增加元素宽度 */
         }
         
         .btn-custom {
@@ -125,6 +142,7 @@
             border-radius: 25px;
             margin: 5px;
             transition: all 0.3s ease;
+            display: inline-block; /* 确保按钮正确显示 */
         }
         
         .btn-custom:hover {
@@ -146,19 +164,59 @@
             margin-bottom: 15px;
         }
         
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
         @media (max-width: 768px) {
             .input-row {
                 grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-custom, .btn-viz {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .chart-wrapper {
+                height: 300px; /* 移动端减小高度 */
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .chart-container {
+                padding: 15px;
+            }
+            
+            .chart-wrapper {
+                height: 250px; /* 小屏幕进一步减小高度 */
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="main-container">
         <div class="header">
             <h1>ChemChen 数据可视化平台</h1>
             <p class="lead">多图表类型动态展示 - 支持自定义数据输入</p>
-            <div class="mt-3">
+            <div class="button-group">
                 <button class="btn-custom" onclick="generateAllRandomData()">生成随机数据</button>
                 <button class="btn-custom" onclick="resetAllData()">重置所有数据</button>
                 <a href="teaching-models.html" class="btn-custom">🎓 查看教学模型</a>
@@ -170,7 +228,7 @@
             <h3 class="chart-title">📊 多图表类型展示</h3>
             
             <!-- 图表类型选择 -->
-            <div class="d-flex flex-wrap justify-content-center mb-4">
+            <div class="button-group">
                 <button type="button" class="btn-viz active" onclick="showChart('line')">
                     📈 折线图
                 </button>
@@ -189,7 +247,9 @@
             </div>
 
             <!-- 图表展示区域 -->
-            <canvas id="chartCanvas" height="400"></canvas>
+            <div class="chart-wrapper">
+                <canvas id="chartCanvas"></canvas>
+            </div>
 
             <!-- 图表信息 -->
             <div class="info-panel">
