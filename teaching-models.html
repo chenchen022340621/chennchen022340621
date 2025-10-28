@@ -12,6 +12,7 @@
             color: white;
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
         }
         
         .header {
@@ -28,11 +29,24 @@
             padding: 25px;
             margin: 20px 0;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
         }
         
-        .chart-container {
+        .model-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chart-wrapper {
             height: 400px;
             margin: 20px 0;
+            position: relative;
+        }
+        
+        .chart-wrapper canvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
         }
         
         .code-section {
@@ -67,24 +81,124 @@
             left: 20px;
             z-index: 1000;
         }
+        
+        .data-input-panel {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid rgba(255,255,255,0.3);
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .control-group input, .control-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 5px;
+            font-size: 14px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            box-sizing: border-box;
+        }
+        
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-teaching {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
     </style>
 </head>
 <body>
     <!-- 返回按钮 -->
     <a href="index.html" class="btn btn-teaching nav-back">← 返回主页</a>
 
-    <div class="container">
+    <div class="main-container">
         <div class="header">
             <h1>📊 Python matplotlib 教学模型展示</h1>
-            <p class="lead">将Python数据可视化代码转换为交互式网页图表</p>
+            <p class="lead">将Python数据可视化代码转换为交互式网页图表 - 支持自定义数据输入</p>
+            <div class="button-group">
+                <button class="btn-teaching" onclick="resetAllTeachingModels()">重置所有模型</button>
+                <button class="btn-teaching" onclick="generateRandomForAll()">为所有模型生成随机数据</button>
+            </div>
         </div>
 
         <!-- 正弦余弦曲线模型 -->
         <div class="model-section">
             <h3>📈 模型1: 正弦和余弦曲线</h3>
-            <div class="chart-container">
+            <div class="chart-wrapper">
                 <canvas id="sineCosineChart"></canvas>
             </div>
+            
+            <!-- 数据输入面板 -->
+            <div class="data-input-panel">
+                <h5>📝 自定义数据输入</h5>
+                <div class="input-row">
+                    <div class="control-group">
+                        <label>正弦数据 (逗号分隔):</label>
+                        <input type="text" id="sineData" value="65,59,80,81,56,55,40,75">
+                    </div>
+                    <div class="control-group">
+                        <label>余弦数据 (逗号分隔):</label>
+                        <input type="text" id="cosineData" value="28,48,40,19,86,27,90,60">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>X轴标签 (逗号分隔):</label>
+                    <input type="text" id="sineLabels" value="1月,2月,3月,4月,5月,6月,7月,8月">
+                </div>
+                <div class="button-group">
+                    <button class="btn-teaching" onclick="updateSineCosineChart()">应用自定义数据</button>
+                    <button class="btn-teaching" onclick="generateRandomSineCosine()">生成随机数据</button>
+                    <button class="btn-teaching" onclick="resetSineCosine()">重置数据</button>
+                </div>
+            </div>
+            
             <div class="code-section">
                 <h5>Python 源码:</h5>
                 <pre>
@@ -101,18 +215,45 @@ plt.legend(['正弦', '余弦'])
 plt.grid(True)
 plt.show()</pre>
             </div>
-            <div class="controls">
-                <button class="btn btn-teaching" onclick="updateSineCosine()">更新数据</button>
-                <button class="btn btn-teaching" onclick="resetSineCosine()">重置</button>
-            </div>
         </div>
 
         <!-- 支付宝月账单模型 -->
         <div class="model-section">
             <h3>💰 模型2: 支付宝月账单报告</h3>
-            <div class="chart-container">
+            <div class="chart-wrapper">
                 <canvas id="alipayChart"></canvas>
             </div>
+            
+            <!-- 数据输入面板 -->
+            <div class="data-input-panel">
+                <h5>📝 自定义数据输入</h5>
+                <div class="input-row">
+                    <div class="control-group">
+                        <label>购物 (%):</label>
+                        <input type="number" id="alipayShopping" value="26.7" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label>餐饮美食 (%):</label>
+                        <input type="number" id="alipayFood" value="33.3" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="control-group">
+                        <label>交通出行 (%):</label>
+                        <input type="number" id="alipayTransport" value="10.0" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label>休闲娱乐 (%):</label>
+                        <input type="number" id="alipayEntertainment" value="8.7" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn-teaching" onclick="updateAlipayChart()">应用自定义数据</button>
+                    <button class="btn-teaching" onclick="generateRandomAlipay()">生成随机数据</button>
+                    <button class="btn-teaching" onclick="resetAlipay()">重置数据</button>
+                </div>
+            </div>
+            
             <div class="code-section">
                 <h5>Python 源码:</h5>
                 <pre>
@@ -123,23 +264,38 @@ plt.title('支付宝月账单报告')
 plt.legend(kinds, loc='upper right')
 plt.show()</pre>
             </div>
-            <div class="controls">
-                <button class="btn btn-teaching" onclick="updateAlipay()">随机数据</button>
-                <button class="btn btn-teaching" onclick="resetAlipay()">重置</button>
-            </div>
         </div>
 
         <!-- 电影票房模型 -->
         <div class="model-section">
             <h3>🎬 模型3: 电影票房排名</h3>
-            <div class="chart-container">
+            <div class="chart-wrapper">
                 <canvas id="movieChart"></canvas>
             </div>
+            
+            <!-- 数据输入面板 -->
+            <div class="data-input-panel">
+                <h5>📝 自定义数据输入</h5>
+                <div class="control-group">
+                    <label>电影票房数据 (逗号分隔，单位:亿元):</label>
+                    <input type="text" id="movieData" value="48.57,46.18,42.05,21.83,17.03,16.70">
+                </div>
+                <div class="control-group">
+                    <label>电影名称 (逗号分隔):</label>
+                    <input type="text" id="movieLabels" value="哪吒之魔童降世,流浪地球,复仇者联盟4,疯狂的外星人,飞驰人生,烈火英雄">
+                </div>
+                <div class="button-group">
+                    <button class="btn-teaching" onclick="updateMovieChart()">应用自定义数据</button>
+                    <button class="btn-teaching" onclick="generateRandomMovie()">生成随机数据</button>
+                    <button class="btn-teaching" onclick="resetMovie()">重置数据</button>
+                </div>
+            </div>
+            
             <div class="code-section">
                 <h5>Python 源码:</h5>
                 <pre>
-labels = ["哪吒之魔童降世","流浪地球","复仇者联盟4","疯狂的外星人","飞驰人生"]
-bar_width = [48.57, 46.18, 42.05, 21.83, 17.03]
+labels = ["哪吒之魔童降世","流浪地球","复仇者联盟4","疯狂的外星人","飞驰人生","烈火英雄"]
+bar_width = [48.57, 46.18, 42.05, 21.83, 17.03, 16.70]
 plt.barh(range(len(labels)), bar_width, color='orange')
 plt.xlabel("总票房（亿元）")
 plt.ylabel("电影名称")
@@ -151,15 +307,33 @@ plt.show()</pre>
         <!-- 汽车制动距离模型 -->
         <div class="model-section">
             <h3>🚗 模型4: 汽车速度与制动距离</h3>
-            <div class="chart-container">
+            <div class="chart-wrapper">
                 <canvas id="carChart"></canvas>
             </div>
+            
+            <!-- 数据输入面板 -->
+            <div class="data-input-panel">
+                <h5>📝 自定义数据输入</h5>
+                <div class="control-group">
+                    <label>速度数据 (逗号分隔，km/h):</label>
+                    <input type="text" id="carSpeedData" value="10,20,30,40,50,60,70,80,90,100">
+                </div>
+                <div class="control-group">
+                    <label>制动距离数据 (逗号分隔，m):</label>
+                    <input type="text" id="carDistanceData" value="0.5,2.0,4.4,7.9,12.3,17.7,24.1,31.5,39.9,49.2">
+                </div>
+                <div class="button-group">
+                    <button class="btn-teaching" onclick="updateCarChart()">应用自定义数据</button>
+                    <button class="btn-teaching" onclick="generateRandomCar()">生成随机数据</button>
+                    <button class="btn-teaching" onclick="resetCar()">重置数据</button>
+                </div>
+            </div>
+            
             <div class="code-section">
                 <h5>Python 源码:</h5>
                 <pre>
-x_speed = np.arange(10, 210, 10)
-y_distance = [0.5,2.0,4.4,7.9,12.3,17.7,24.1,31.5,39.9,49.2,
-              59.5,70.8,83.1,96.4,110.7,126.0,142.2,159.4,177.6,196.8]
+x_speed = np.arange(10, 110, 10)
+y_distance = [0.5,2.0,4.4,7.9,12.3,17.7,24.1,31.5,39.9,49.2]
 plt.scatter(x_speed, y_distance, s=50, alpha=0.9)
 plt.xlabel('速度(km/h)')
 plt.ylabel('制动距离(m)')
@@ -171,9 +345,34 @@ plt.show()</pre>
         <!-- 英语成绩模型 -->
         <div class="model-section">
             <h3>📚 模型5: 英语平均成绩对比</h3>
-            <div class="chart-container">
+            <div class="chart-wrapper">
                 <canvas id="englishChart"></canvas>
             </div>
+            
+            <!-- 数据输入面板 -->
+            <div class="data-input-panel">
+                <h5>📝 自定义数据输入</h5>
+                <div class="input-row">
+                    <div class="control-group">
+                        <label>男生成绩 (逗号分隔):</label>
+                        <input type="text" id="maleScores" value="90.5,89.5,88.7,88.5,85.2,86.6">
+                    </div>
+                    <div class="control-group">
+                        <label>女生成绩 (逗号分隔):</label>
+                        <input type="text" id="femaleScores" value="92.7,87.0,90.5,85.0,89.5,89.8">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>班级名称 (逗号分隔):</label>
+                    <input type="text" id="classLabels" value="高二1班,高二2班,高二3班,高二4班,高二5班,高二6班">
+                </div>
+                <div class="button-group">
+                    <button class="btn-teaching" onclick="updateEnglishChart()">应用自定义数据</button>
+                    <button class="btn-teaching" onclick="generateRandomEnglish()">生成随机数据</button>
+                    <button class="btn-teaching" onclick="resetEnglish()">重置数据</button>
+                </div>
+            </div>
+            
             <div class="code-section">
                 <h5>Python 源码:</h5>
                 <pre>
@@ -195,9 +394,28 @@ plt.show()</pre>
         <!-- 阿里巴巴GMV模型 -->
         <div class="model-section">
             <h3>📊 模型6: 阿里巴巴GMV数据</h3>
-            <div class="chart-container">
+            <div class="chart-wrapper">
                 <canvas id="gmvChart"></canvas>
             </div>
+            
+            <!-- 数据输入面板 -->
+            <div class="data-input-panel">
+                <h5>📝 自定义数据输入</h5>
+                <div class="control-group">
+                    <label>GMV数据 (逗号分隔，单位:亿元):</label>
+                    <input type="text" id="gmvData" value="10770,16780,24440,30920,37670,48200,57270">
+                </div>
+                <div class="control-group">
+                    <label>年份标签 (逗号分隔):</label>
+                    <input type="text" id="gmvLabels" value="FY2013,FY2014,FY2015,FY2016,FY2017,FY2018,FY2019">
+                </div>
+                <div class="button-group">
+                    <button class="btn-teaching" onclick="updateGmvChart()">应用自定义数据</button>
+                    <button class="btn-teaching" onclick="generateRandomGmv()">生成随机数据</button>
+                    <button class="btn-teaching" onclick="resetGmv()">重置数据</button>
+                </div>
+            </div>
+            
             <div class="code-section">
                 <h5>Python 源码:</h5>
                 <pre>
@@ -217,30 +435,26 @@ plt.show()</pre>
     </div>
 
     <script>
+        // 图表实例存储
+        const teachingCharts = {};
+
         // 初始化所有图表
         document.addEventListener('DOMContentLoaded', function() {
-            initSineCosineChart();
-            initAlipayChart();
-            initMovieChart();
-            initCarChart();
-            initEnglishChart();
-            initGmvChart();
+            initTeachingCharts();
         });
 
         // ========== 正弦余弦曲线 ==========
-        let sineCosineChart;
         function initSineCosineChart() {
             const ctx = document.getElementById('sineCosineChart').getContext('2d');
-            const x = Array.from({length: 256}, (_, i) => -Math.PI + (2 * Math.PI * i) / 255);
             
-            sineCosineChart = new Chart(ctx, {
+            teachingCharts.sineCosine = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: x,
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'],
                     datasets: [
                         {
                             label: '正弦',
-                            data: x.map(val => Math.sin(val)),
+                            data: [65, 59, 80, 81, 56, 55, 40, 75],
                             borderColor: 'rgb(75, 192, 192)',
                             backgroundColor: 'rgba(75, 192, 192, 0.1)',
                             tension: 0.4,
@@ -248,7 +462,7 @@ plt.show()</pre>
                         },
                         {
                             label: '余弦',
-                            data: x.map(val => Math.cos(val)),
+                            data: [28, 48, 40, 19, 86, 27, 90, 60],
                             borderColor: 'rgb(255, 99, 132)',
                             backgroundColor: 'rgba(255, 99, 132, 0.1)',
                             tension: 0.4,
@@ -294,29 +508,46 @@ plt.show()</pre>
             });
         }
 
-        function updateSineCosine() {
-            const x = Array.from({length: 256}, (_, i) => -Math.PI + (2 * Math.PI * i) / 255);
-            const amplitude = 0.5 + Math.random() * 0.5;
-            const frequency = 0.5 + Math.random();
+        function updateSineCosineChart() {
+            try {
+                const sineData = document.getElementById('sineData').value.split(',').map(val => parseFloat(val.trim()));
+                const cosineData = document.getElementById('cosineData').value.split(',').map(val => parseFloat(val.trim()));
+                const labels = document.getElementById('sineLabels').value.split(',').map(label => label.trim());
+                
+                teachingCharts.sineCosine.data.labels = labels;
+                teachingCharts.sineCosine.data.datasets[0].data = sineData;
+                teachingCharts.sineCosine.data.datasets[1].data = cosineData;
+                teachingCharts.sineCosine.update();
+            } catch (error) {
+                alert('数据格式错误！请确保输入的是用逗号分隔的数字。');
+            }
+        }
+
+        function generateRandomSineCosine() {
+            const length = 8;
+            const sineData = Array.from({length}, () => Math.floor(Math.random() * 100));
+            const cosineData = Array.from({length}, () => Math.floor(Math.random() * 100));
+            const labels = Array.from({length}, (_, i) => `数据${i+1}`);
             
-            sineCosineChart.data.datasets[0].data = x.map(val => amplitude * Math.sin(frequency * val));
-            sineCosineChart.data.datasets[1].data = x.map(val => amplitude * Math.cos(frequency * val));
-            sineCosineChart.update();
+            document.getElementById('sineData').value = sineData.join(',');
+            document.getElementById('cosineData').value = cosineData.join(',');
+            document.getElementById('sineLabels').value = labels.join(',');
+            
+            updateSineCosineChart();
         }
 
         function resetSineCosine() {
-            const x = Array.from({length: 256}, (_, i) => -Math.PI + (2 * Math.PI * i) / 255);
-            sineCosineChart.data.datasets[0].data = x.map(val => Math.sin(val));
-            sineCosineChart.data.datasets[1].data = x.map(val => Math.cos(val));
-            sineCosineChart.update();
+            document.getElementById('sineData').value = "65,59,80,81,56,55,40,75";
+            document.getElementById('cosineData').value = "28,48,40,19,86,27,90,60";
+            document.getElementById('sineLabels').value = "1月,2月,3月,4月,5月,6月,7月,8月";
+            updateSineCosineChart();
         }
 
         // ========== 支付宝月账单 ==========
-        let alipayChart;
         function initAlipayChart() {
             const ctx = document.getElementById('alipayChart').getContext('2d');
             
-            alipayChart = new Chart(ctx, {
+            teachingCharts.alipay = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: ['购物', '人情往来', '餐饮美食', '通信物流', '生活日用', '交通出行', '休闲娱乐', '其他'],
@@ -347,25 +578,44 @@ plt.show()</pre>
             });
         }
 
-        function updateAlipay() {
-            const newData = Array.from({length: 8}, () => Math.random() * 30 + 5);
-            const total = newData.reduce((a, b) => a + b, 0);
-            const normalizedData = newData.map(val => (val / total) * 100);
+        function updateAlipayChart() {
+            const shopping = parseFloat(document.getElementById('alipayShopping').value) || 0;
+            const food = parseFloat(document.getElementById('alipayFood').value) || 0;
+            const transport = parseFloat(document.getElementById('alipayTransport').value) || 0;
+            const entertainment = parseFloat(document.getElementById('alipayEntertainment').value) || 0;
             
-            alipayChart.data.datasets[0].data = normalizedData;
-            alipayChart.update();
+            // 计算其他类别
+            const remaining = 100 - shopping - food - transport - entertainment;
+            const otherCategories = [3.3, 6.7, 4.7, remaining/2, remaining/2];
+            
+            const newData = [shopping, ...otherCategories.slice(0, 1), food, ...otherCategories.slice(1, 2), 
+                           transport, ...otherCategories.slice(2, 3), entertainment, ...otherCategories.slice(3)];
+            
+            teachingCharts.alipay.data.datasets[0].data = newData;
+            teachingCharts.alipay.update();
+        }
+
+        function generateRandomAlipay() {
+            document.getElementById('alipayShopping').value = (Math.random() * 40 + 20).toFixed(1);
+            document.getElementById('alipayFood').value = (Math.random() * 40 + 20).toFixed(1);
+            document.getElementById('alipayTransport').value = (Math.random() * 20 + 5).toFixed(1);
+            document.getElementById('alipayEntertainment').value = (Math.random() * 15 + 5).toFixed(1);
+            updateAlipayChart();
         }
 
         function resetAlipay() {
-            alipayChart.data.datasets[0].data = [26.7, 3.3, 33.3, 6.7, 10.0, 4.7, 8.7, 6.7];
-            alipayChart.update();
+            document.getElementById('alipayShopping').value = "26.7";
+            document.getElementById('alipayFood').value = "33.3";
+            document.getElementById('alipayTransport').value = "10.0";
+            document.getElementById('alipayEntertainment').value = "8.7";
+            updateAlipayChart();
         }
 
         // ========== 电影票房 ==========
         function initMovieChart() {
             const ctx = document.getElementById('movieChart').getContext('2d');
             
-            new Chart(ctx, {
+            teachingCharts.movie = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ["哪吒之魔童降世", "流浪地球", "复仇者联盟4", "疯狂的外星人", "飞驰人生", "烈火英雄"],
@@ -411,11 +661,40 @@ plt.show()</pre>
             });
         }
 
+        function updateMovieChart() {
+            try {
+                const data = document.getElementById('movieData').value.split(',').map(val => parseFloat(val.trim()));
+                const labels = document.getElementById('movieLabels').value.split(',').map(label => label.trim());
+                
+                teachingCharts.movie.data.labels = labels;
+                teachingCharts.movie.data.datasets[0].data = data;
+                teachingCharts.movie.update();
+            } catch (error) {
+                alert('数据格式错误！请确保输入的是用逗号分隔的数字。');
+            }
+        }
+
+        function generateRandomMovie() {
+            const length = 6;
+            const data = Array.from({length}, () => (Math.random() * 50 + 10).toFixed(2));
+            const labels = Array.from({length}, (_, i) => `电影${i+1}`);
+            
+            document.getElementById('movieData').value = data.join(',');
+            document.getElementById('movieLabels').value = labels.join(',');
+            updateMovieChart();
+        }
+
+        function resetMovie() {
+            document.getElementById('movieData').value = "48.57,46.18,42.05,21.83,17.03,16.70";
+            document.getElementById('movieLabels').value = "哪吒之魔童降世,流浪地球,复仇者联盟4,疯狂的外星人,飞驰人生,烈火英雄";
+            updateMovieChart();
+        }
+
         // ========== 汽车制动距离 ==========
         function initCarChart() {
             const ctx = document.getElementById('carChart').getContext('2d');
             
-            new Chart(ctx, {
+            teachingCharts.car = new Chart(ctx, {
                 type: 'scatter',
                 data: {
                     datasets: [{
@@ -423,9 +702,7 @@ plt.show()</pre>
                         data: [
                             {x: 10, y: 0.5}, {x: 20, y: 2.0}, {x: 30, y: 4.4}, {x: 40, y: 7.9},
                             {x: 50, y: 12.3}, {x: 60, y: 17.7}, {x: 70, y: 24.1}, {x: 80, y: 31.5},
-                            {x: 90, y: 39.9}, {x: 100, y: 49.2}, {x: 110, y: 59.5}, {x: 120, y: 70.8},
-                            {x: 130, y: 83.1}, {x: 140, y: 96.4}, {x: 150, y: 110.7}, {x: 160, y: 126.0},
-                            {x: 170, y: 142.2}, {x: 180, y: 159.4}, {x: 190, y: 177.6}, {x: 200, y: 196.8}
+                            {x: 90, y: 39.9}, {x: 100, y: 49.2}
                         ],
                         backgroundColor: 'rgba(54, 162, 235, 0.8)',
                         borderColor: 'rgb(54, 162, 235)',
@@ -468,11 +745,44 @@ plt.show()</pre>
             });
         }
 
+        function updateCarChart() {
+            try {
+                const speedData = document.getElementById('carSpeedData').value.split(',').map(val => parseFloat(val.trim()));
+                const distanceData = document.getElementById('carDistanceData').value.split(',').map(val => parseFloat(val.trim()));
+                
+                const newData = speedData.map((speed, index) => ({
+                    x: speed,
+                    y: distanceData[index] || 0
+                }));
+                
+                teachingCharts.car.data.datasets[0].data = newData;
+                teachingCharts.car.update();
+            } catch (error) {
+                alert('数据格式错误！请确保输入的是用逗号分隔的数字，且两组数据长度相同。');
+            }
+        }
+
+        function generateRandomCar() {
+            const length = 10;
+            const speedData = Array.from({length}, (_, i) => (i + 1) * 10);
+            const distanceData = Array.from({length}, () => (Math.random() * 50).toFixed(1));
+            
+            document.getElementById('carSpeedData').value = speedData.join(',');
+            document.getElementById('carDistanceData').value = distanceData.join(',');
+            updateCarChart();
+        }
+
+        function resetCar() {
+            document.getElementById('carSpeedData').value = "10,20,30,40,50,60,70,80,90,100";
+            document.getElementById('carDistanceData').value = "0.5,2.0,4.4,7.9,12.3,17.7,24.1,31.5,39.9,49.2";
+            updateCarChart();
+        }
+
         // ========== 英语成绩 ==========
         function initEnglishChart() {
             const ctx = document.getElementById('englishChart').getContext('2d');
             
-            new Chart(ctx, {
+            teachingCharts.english = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['高二1班', '高二2班', '高二3班', '高二4班', '高二5班', '高二6班'],
@@ -528,11 +838,45 @@ plt.show()</pre>
             });
         }
 
+        function updateEnglishChart() {
+            try {
+                const maleScores = document.getElementById('maleScores').value.split(',').map(val => parseFloat(val.trim()));
+                const femaleScores = document.getElementById('femaleScores').value.split(',').map(val => parseFloat(val.trim()));
+                const labels = document.getElementById('classLabels').value.split(',').map(label => label.trim());
+                
+                teachingCharts.english.data.labels = labels;
+                teachingCharts.english.data.datasets[0].data = maleScores;
+                teachingCharts.english.data.datasets[1].data = femaleScores;
+                teachingCharts.english.update();
+            } catch (error) {
+                alert('数据格式错误！请确保输入的是用逗号分隔的数字。');
+            }
+        }
+
+        function generateRandomEnglish() {
+            const length = 6;
+            const maleScores = Array.from({length}, () => (Math.random() * 15 + 80).toFixed(1));
+            const femaleScores = Array.from({length}, () => (Math.random() * 15 + 80).toFixed(1));
+            const labels = Array.from({length}, (_, i) => `班级${i+1}`);
+            
+            document.getElementById('maleScores').value = maleScores.join(',');
+            document.getElementById('femaleScores').value = femaleScores.join(',');
+            document.getElementById('classLabels').value = labels.join(',');
+            updateEnglishChart();
+        }
+
+        function resetEnglish() {
+            document.getElementById('maleScores').value = "90.5,89.5,88.7,88.5,85.2,86.6";
+            document.getElementById('femaleScores').value = "92.7,87.0,90.5,85.0,89.5,89.8";
+            document.getElementById('classLabels').value = "高二1班,高二2班,高二3班,高二4班,高二5班,高二6班";
+            updateEnglishChart();
+        }
+
         // ========== 阿里巴巴GMV ==========
         function initGmvChart() {
             const ctx = document.getElementById('gmvChart').getContext('2d');
             
-            new Chart(ctx, {
+            teachingCharts.gmv = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ["FY2013", "FY2014", "FY2015", "FY2016", "FY2017", "FY2018", "FY2019"],
@@ -575,6 +919,66 @@ plt.show()</pre>
                     }
                 }
             });
+        }
+
+        function updateGmvChart() {
+            try {
+                const data = document.getElementById('gmvData').value.split(',').map(val => parseFloat(val.trim()));
+                const labels = document.getElementById('gmvLabels').value.split(',').map(label => label.trim());
+                
+                teachingCharts.gmv.data.labels = labels;
+                teachingCharts.gmv.data.datasets[0].data = data;
+                teachingCharts.gmv.update();
+            } catch (error) {
+                alert('数据格式错误！请确保输入的是用逗号分隔的数字。');
+            }
+        }
+
+        function generateRandomGmv() {
+            const length = 7;
+            const data = Array.from({length}, (_, i) => Math.floor(Math.random() * 50000 + 10000));
+            const labels = Array.from({length}, (_, i) => `年份${i+1}`);
+            
+            document.getElementById('gmvData').value = data.join(',');
+            document.getElementById('gmvLabels').value = labels.join(',');
+            updateGmvChart();
+        }
+
+        function resetGmv() {
+            document.getElementById('gmvData').value = "10770,16780,24440,30920,37670,48200,57270";
+            document.getElementById('gmvLabels').value = "FY2013,FY2014,FY2015,FY2016,FY2017,FY2018,FY2019";
+            updateGmvChart();
+        }
+
+        // ========== 初始化所有图表 ==========
+        function initTeachingCharts() {
+            initSineCosineChart();
+            initAlipayChart();
+            initMovieChart();
+            initCarChart();
+            initEnglishChart();
+            initGmvChart();
+        }
+
+        // ========== 全局功能 ==========
+        function resetAllTeachingModels() {
+            resetSineCosine();
+            resetAlipay();
+            resetMovie();
+            resetCar();
+            resetEnglish();
+            resetGmv();
+            alert('所有教学模型已重置！');
+        }
+
+        function generateRandomForAll() {
+            generateRandomSineCosine();
+            generateRandomAlipay();
+            generateRandomMovie();
+            generateRandomCar();
+            generateRandomEnglish();
+            generateRandomGmv();
+            alert('已为所有模型生成随机数据！');
         }
     </script>
 </body>
