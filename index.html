@@ -107,7 +107,7 @@
             color: rgba(255,255,255,0.9);
         }
         
-        .control-group input, .control-group select {
+        .control-group input, .control-group select, .control-group textarea {
             width: 100%;
             padding: 10px;
             border: 2px solid rgba(255,255,255,0.3);
@@ -132,18 +132,22 @@
             transform: translateY(-2px);
         }
         
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .data-input-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
         }
         
-        .full-width {
-            grid-column: 1 / -1;
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
         }
         
         @media (max-width: 768px) {
-            .dashboard {
+            .input-row {
                 grid-template-columns: 1fr;
             }
         }
@@ -153,7 +157,7 @@
     <div class="container">
         <div class="header">
             <h1>ChemChen 数据可视化平台</h1>
-            <p class="lead">动态数据展示与多模型分析</p>
+            <p class="lead">多图表类型动态展示 - 支持自定义数据输入</p>
             <div class="mt-3">
                 <button class="btn-custom" onclick="generateAllRandomData()">生成随机数据</button>
                 <button class="btn-custom" onclick="resetAllData()">重置所有数据</button>
@@ -161,424 +165,53 @@
             </div>
         </div>
 
-        <div class="dashboard">
-            <!-- 数值趋势分析 -->
-            <div class="chart-container">
-                <h3 class="chart-title">📈 数值趋势分析</h3>
-                <canvas id="trendChart" height="250"></canvas>
-                <div class="data-controls">
-                    <div class="control-group">
-                        <label>数值序列 (逗号分隔):</label>
-                        <input type="text" id="trendData" value="1.00,0.75,0.90,0.25,0.00,-0.25,-0.50,-0.75,-1.00">
-                    </div>
-                    <button class="btn-custom" onclick="updateTrendChart()">更新图表</button>
-                </div>
+        <!-- 多图表类型展示 -->
+        <div class="chart-container">
+            <h3 class="chart-title">📊 多图表类型展示</h3>
+            
+            <!-- 图表类型选择 -->
+            <div class="d-flex flex-wrap justify-content-center mb-4">
+                <button type="button" class="btn-viz active" onclick="showChart('line')">
+                    📈 折线图
+                </button>
+                <button type="button" class="btn-viz" onclick="showChart('bar')">
+                    📊 柱形图
+                </button>
+                <button type="button" class="btn-viz" onclick="showChart('pie')">
+                    🥧 饼图
+                </button>
+                <button type="button" class="btn-viz" onclick="showChart('doughnut')">
+                    🍩 环形图
+                </button>
+                <button type="button" class="btn-viz" onclick="showChart('radar')">
+                    🛰️ 雷达图
+                </button>
             </div>
 
-            <!-- 消费分布分析 -->
-            <div class="chart-container">
-                <h3 class="chart-title">💰 消费分布分析</h3>
-                <canvas id="expenseChart" height="250"></canvas>
-                <div class="data-controls">
-                    <div class="control-group">
-                        <label>购物消费 (%):</label>
-                        <input type="number" id="shopping" value="26.7" min="0" max="100" step="0.1">
-                    </div>
-                    <div class="control-group">
-                        <label>餐饮美食 (%):</label>
-                        <input type="number" id="food" value="33.3" min="0" max="100" step="0.1">
-                    </div>
-                    <button class="btn-custom" onclick="updateExpenseChart()">更新分布</button>
-                </div>
+            <!-- 图表展示区域 -->
+            <canvas id="chartCanvas" height="400"></canvas>
+
+            <!-- 图表信息 -->
+            <div class="info-panel">
+                <h5 id="currentChartName">折线图</h5>
+                <p id="currentChartDescription" class="mb-0">
+                    折线图用于显示数据随时间或有序类别的变化趋势，直观展示数据的上升或下降趋势。
+                </p>
             </div>
 
-            <!-- 多图表类型展示 -->
-            <div class="chart-container full-width">
-                <h3 class="chart-title">📊 多图表类型展示</h3>
-                
-                <!-- 图表类型选择 -->
-                <div class="d-flex flex-wrap justify-content-center mb-4">
-                    <button type="button" class="btn-viz active" onclick="showChart('line')">
-                        📈 折线图
-                    </button>
-                    <button type="button" class="btn-viz" onclick="showChart('bar')">
-                        📊 柱形图
-                    </button>
-                    <button type="button" class="btn-viz" onclick="showChart('pie')">
-                        🥧 饼图
-                    </button>
-                    <button type="button" class="btn-viz" onclick="showChart('doughnut')">
-                        🍩 环形图
-                    </button>
-                    <button type="button" class="btn-viz" onclick="showChart('radar')">
-                        🛰️ 雷达图
-                    </button>
+            <!-- 数据输入区域 -->
+            <div class="data-input-section">
+                <h5>📝 自定义数据输入</h5>
+                <div id="dataInputs">
+                    <!-- 动态生成的数据输入区域 -->
                 </div>
-
-                <!-- 图表展示区域 -->
-                <canvas id="multiChart" height="300"></canvas>
-
-                <!-- 图表信息 -->
-                <div class="info-panel">
-                    <h5 id="currentChartName">折线图</h5>
-                    <p id="currentChartDescription" class="mb-0">
-                        折线图用于显示数据随时间或有序类别的变化趋势，直观展示数据的上升或下降趋势。
-                    </p>
-                </div>
-            </div>
-
-            <!-- 用户数据分析 -->
-            <div class="chart-container">
-                <h3 class="chart-title">👥 用户分布分析</h3>
-                <canvas id="userChart" height="250"></canvas>
-                <div class="data-controls">
-                    <div class="control-group">
-                        <label>男性比例 (%):</label>
-                        <input type="number" id="malePercent" value="45" min="0" max="100" onchange="updateUserChart()">
-                    </div>
-                    <div class="control-group">
-                        <label>女性比例 (%):</label>
-                        <input type="number" id="femalePercent" value="55" min="0" max="100" onchange="updateUserChart()">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 数据统计面板 -->
-            <div class="chart-container">
-                <h3 class="chart-title">📋 数据统计</h3>
-                <div id="statsPanel" class="info-panel">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <h4 id="totalUsers">1,234</h4>
-                            <small>总用户数</small>
-                        </div>
-                        <div class="col-6">
-                            <h4 id="activeRate">76.5%</h4>
-                            <small>活跃率</small>
-                        </div>
-                    </div>
-                    <div class="row text-center mt-3">
-                        <div class="col-6">
-                            <h4 id="avgScore">85.2</h4>
-                            <small>平均得分</small>
-                        </div>
-                        <div class="col-6">
-                            <h4 id="growthRate">+12.3%</h4>
-                            <small>增长率</small>
-                        </div>
-                    </div>
-                </div>
-                <button class="btn-custom w-100 mt-3" onclick="updateStats()">更新统计数据</button>
+                <button class="btn-custom w-100 mt-3" onclick="updateChartWithCustomData()">
+                    应用自定义数据
+                </button>
             </div>
         </div>
     </div>
 
-    <script>
-        // 全局图表实例
-        let trendChart, expenseChart, userChart, multiChart;
-
-        // 初始化所有图表
-        document.addEventListener('DOMContentLoaded', function() {
-            initTrendChart();
-            initExpenseChart();
-            initUserChart();
-            initMultiChart();
-            updateStats();
-        });
-
-        // ========== 数值趋势图表 ==========
-        function initTrendChart() {
-            const ctx = document.getElementById('trendChart').getContext('2d');
-            const data = getTrendData();
-            
-            trendChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: '数值趋势',
-                        data: data.values,
-                        borderColor: '#36A2EB',
-                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { labels: { color: 'white' } }
-                    },
-                    scales: {
-                        y: {
-                            grid: { color: 'rgba(255,255,255,0.1)' },
-                            ticks: { color: 'white' }
-                        },
-                        x: {
-                            grid: { color: 'rgba(255,255,255,0.1)' },
-                            ticks: { color: 'white' }
-                        }
-                    }
-                }
-            });
-        }
-
-        function getTrendData() {
-            const dataInput = document.getElementById('trendData').value;
-            const values = dataInput.split(',').map(val => parseFloat(val.trim()));
-            const labels = values.map((_, i) => `数据${i+1}`);
-            return { values, labels };
-        }
-
-        function updateTrendChart() {
-            const data = getTrendData();
-            trendChart.data.labels = data.labels;
-            trendChart.data.datasets[0].data = data.values;
-            trendChart.update();
-        }
-
-        // ========== 消费分布图表 ==========
-        function initExpenseChart() {
-            const ctx = document.getElementById('expenseChart').getContext('2d');
-            const data = getExpenseData();
-            
-            expenseChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        data: data.values,
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { labels: { color: 'white' } }
-                    }
-                }
-            });
-        }
-
-        function getExpenseData() {
-            const shopping = parseFloat(document.getElementById('shopping').value) || 0;
-            const food = parseFloat(document.getElementById('food').value) || 0;
-            const other = 100 - shopping - food;
-            
-            return {
-                labels: ['购物', '餐饮美食', '其他消费'],
-                values: [shopping, food, other]
-            };
-        }
-
-        function updateExpenseChart() {
-            const data = getExpenseData();
-            expenseChart.data.labels = data.labels;
-            expenseChart.data.datasets[0].data = data.values;
-            expenseChart.update();
-        }
-
-        // ========== 用户数据图表 ==========
-        function initUserChart() {
-            const ctx = document.getElementById('userChart').getContext('2d');
-            
-            userChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['男性', '女性'],
-                    datasets: [{
-                        data: [45, 55],
-                        backgroundColor: ['#36A2EB', '#FF6384']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { labels: { color: 'white' } }
-                    }
-                }
-            });
-        }
-
-        function updateUserChart() {
-            const male = parseFloat(document.getElementById('malePercent').value) || 0;
-            const female = parseFloat(document.getElementById('femalePercent').value) || 0;
-            
-            userChart.data.datasets[0].data = [male, female];
-            userChart.update();
-        }
-
-        // ========== 多图表展示 ==========
-        const chartDescriptions = {
-            line: "折线图用于显示数据随时间或有序类别的变化趋势，直观展示数据的上升或下降趋势。",
-            bar: "柱形图使用垂直柱子比较不同类别的数据值，适用于比较离散的数据。",
-            pie: "饼图显示各部分占整体的比例关系，适用于展示构成关系。",
-            doughnut: "环形图是饼图的变体，中间有圆形切口，同样用于显示比例关系。",
-            radar: "雷达图显示多变量数据，每个变量在从同一点开始的轴上进行表示。"
-        };
-
-        function initMultiChart() {
-            showChart('line');
-        }
-
-        function showChart(type) {
-            // 更新按钮状态
-            document.querySelectorAll('.btn-viz').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // 更新描述
-            document.getElementById('currentChartName').textContent = 
-                type === 'line' ? '折线图' : 
-                type === 'bar' ? '柱形图' : 
-                type === 'pie' ? '饼图' : 
-                type === 'doughnut' ? '环形图' : '雷达图';
-            document.getElementById('currentChartDescription').textContent = chartDescriptions[type];
-
-            // 销毁旧图表
-            if (multiChart) {
-                multiChart.destroy();
-            }
-
-            // 创建新图表
-            const ctx = document.getElementById('multiChart').getContext('2d');
-            multiChart = new Chart(ctx, getChartConfig(type));
-        }
-
-        function getChartConfig(type) {
-            const commonData = {
-                labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
-                datasets: [{
-                    label: '数据集1',
-                    data: [65, 59, 80, 81, 56, 55],
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    borderColor: 'rgb(255, 99, 132)'
-                }]
-            };
-
-            const configs = {
-                line: {
-                    type: 'line',
-                    data: commonData,
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                            x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                        }
-                    }
-                },
-                bar: {
-                    type: 'bar',
-                    data: commonData,
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                            x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-                        }
-                    }
-                },
-                pie: {
-                    type: 'pie',
-                    data: {
-                        labels: ['类别A', '类别B', '类别C', '类别D'],
-                        datasets: [{
-                            data: [30, 25, 20, 25],
-                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
-                        }]
-                    },
-                    options: { responsive: true }
-                },
-                doughnut: {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['部分1', '部分2', '部分3', '部分4'],
-                        datasets: [{
-                            data: [35, 25, 20, 20],
-                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
-                        }]
-                    },
-                    options: { responsive: true }
-                },
-                radar: {
-                    type: 'radar',
-                    data: {
-                        labels: ['维度1', '维度2', '维度3', '维度4', '维度5'],
-                        datasets: [{
-                            label: '数据集1',
-                            data: [85, 90, 70, 95, 80],
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                            borderColor: 'rgb(255, 99, 132)'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            r: {
-                                angleLines: { color: 'rgba(255,255,255,0.2)' },
-                                grid: { color: 'rgba(255,255,255,0.2)' },
-                                pointLabels: { color: 'white' },
-                                ticks: { color: 'white' }
-                            }
-                        }
-                    }
-                }
-            };
-
-            return configs[type];
-        }
-
-        // ========== 统计面板 ==========
-        function updateStats() {
-            document.getElementById('totalUsers').textContent = 
-                Math.floor(Math.random() * 5000 + 1000).toLocaleString();
-            document.getElementById('activeRate').textContent = 
-                (Math.random() * 30 + 70).toFixed(1) + '%';
-            document.getElementById('avgScore').textContent = 
-                (Math.random() * 20 + 80).toFixed(1);
-            document.getElementById('growthRate').textContent = 
-                (Math.random() > 0.5 ? '+' : '-') + (Math.random() * 20 + 5).toFixed(1) + '%';
-        }
-
-        // ========== 工具函数 ==========
-        function generateAllRandomData() {
-            // 趋势数据
-            const randomTrend = Array.from({length: 8}, () => (Math.random() * 2 - 1).toFixed(2));
-            document.getElementById('trendData').value = randomTrend.join(',');
-            updateTrendChart();
-
-            // 消费数据
-            document.getElementById('shopping').value = (Math.random() * 50 + 20).toFixed(1);
-            document.getElementById('food').value = (Math.random() * 40 + 20).toFixed(1);
-            updateExpenseChart();
-
-            // 用户数据
-            const male = Math.random() * 100;
-            document.getElementById('malePercent').value = male.toFixed(1);
-            document.getElementById('femalePercent').value = (100 - male).toFixed(1);
-            updateUserChart();
-
-            // 统计数据
-            updateStats();
-
-            alert('随机数据生成完成！');
-        }
-
-        function resetAllData() {
-            document.getElementById('trendData').value = "1.00,0.75,0.90,0.25,0.00,-0.25,-0.50,-0.75,-1.00";
-            document.getElementById('shopping').value = "26.7";
-            document.getElementById('food').value = "33.3";
-            document.getElementById('malePercent').value = "45";
-            document.getElementById('femalePercent').value = "55";
-            
-            updateTrendChart();
-            updateExpenseChart();
-            updateUserChart();
-            updateStats();
-            
-            alert('数据重置完成！');
-        }
-    </script>
+    <script src="js/charts.js"></script>
 </body>
 </html>
