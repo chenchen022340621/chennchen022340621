@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教学模型展示 - ChemChen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+        
+        .model-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .chart-container {
+            height: 400px;
+            margin: 20px 0;
+        }
+        
+        .code-section {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        
+        .btn-teaching {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 20px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-teaching:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .nav-back {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <!-- 返回按钮 -->
+    <a href="index.html" class="btn btn-teaching nav-back">← 返回主页</a>
+
+    <div class="container">
+        <div class="header">
+            <h1>📊 Python matplotlib 教学模型展示</h1>
+            <p class="lead">将Python数据可视化代码转换为交互式网页图表</p>
+        </div>
+
+        <!-- 正弦余弦曲线模型 -->
+        <div class="model-section">
+            <h3>📈 模型1: 正弦和余弦曲线</h3>
+            <div class="chart-container">
+                <canvas id="sineCosineChart"></canvas>
+            </div>
+            <div class="code-section">
+                <h5>Python 源码:</h5>
+                <pre>
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.linspace(-np.pi, np.pi, 256, endpoint=True)
+y1, y2 = np.sin(x), np.cos(x)
+plt.plot(x, y1, x, y2)
+plt.xlabel("x轴")
+plt.ylabel("y轴")
+plt.title("正弦曲线和余弦曲线")
+plt.legend(['正弦', '余弦'])
+plt.grid(True)
+plt.show()</pre>
+            </div>
+            <div class="controls">
+                <button class="btn btn-teaching" onclick="updateSineCosine()">更新数据</button>
+                <button class="btn btn-teaching" onclick="resetSineCosine()">重置</button>
+            </div>
+        </div>
+
+        <!-- 支付宝月账单模型 -->
+        <div class="model-section">
+            <h3>💰 模型2: 支付宝月账单报告</h3>
+            <div class="chart-container">
+                <canvas id="alipayChart"></canvas>
+            </div>
+            <div class="code-section">
+                <h5>Python 源码:</h5>
+                <pre>
+kinds = ['购物','人情往来','餐饮美食','通信物流','生活日用','交通出行','休闲娱乐','其他']
+money_scale = [800/3000, 100/3000, 1000/3000, 200/3000, 300/3000, 200/3000, 200/3000, 200/3000]
+plt.pie(money_scale, autopct='%3.1f%%', shadow=True)
+plt.title('支付宝月账单报告')
+plt.legend(kinds, loc='upper right')
+plt.show()</pre>
+            </div>
+            <div class="controls">
+                <button class="btn btn-teaching" onclick="updateAlipay()">随机数据</button>
+                <button class="btn btn-teaching" onclick="resetAlipay()">重置</button>
+            </div>
+        </div>
+
+        <!-- 电影票房模型 -->
+        <div class="model-section">
+            <h3>🎬 模型3: 电影票房排名</h3>
+            <div class="chart-container">
+                <canvas id="movieChart"></canvas>
+            </div>
+            <div class="code-section">
+                <h5>Python 源码:</h5>
+                <pre>
+labels = ["哪吒之魔童降世","流浪地球","复仇者联盟4","疯狂的外星人","飞驰人生"]
+bar_width = [48.57, 46.18, 42.05, 21.83, 17.03]
+plt.barh(range(len(labels)), bar_width, color='orange')
+plt.xlabel("总票房（亿元）")
+plt.ylabel("电影名称")
+plt.yticks(range(len(labels)), labels)
+plt.show()</pre>
+            </div>
+        </div>
+
+        <!-- 汽车制动距离模型 -->
+        <div class="model-section">
+            <h3>🚗 模型4: 汽车速度与制动距离</h3>
+            <div class="chart-container">
+                <canvas id="carChart"></canvas>
+            </div>
+            <div class="code-section">
+                <h5>Python 源码:</h5>
+                <pre>
+x_speed = np.arange(10, 210, 10)
+y_distance = [0.5,2.0,4.4,7.9,12.3,17.7,24.1,31.5,39.9,49.2,
+              59.5,70.8,83.1,96.4,110.7,126.0,142.2,159.4,177.6,196.8]
+plt.scatter(x_speed, y_distance, s=50, alpha=0.9)
+plt.xlabel('速度(km/h)')
+plt.ylabel('制动距离(m)')
+plt.grid(True)
+plt.show()</pre>
+            </div>
+        </div>
+
+        <!-- 英语成绩模型 -->
+        <div class="model-section">
+            <h3>📚 模型5: 英语平均成绩对比</h3>
+            <div class="chart-container">
+                <canvas id="englishChart"></canvas>
+            </div>
+            <div class="code-section">
+                <h5>Python 源码:</h5>
+                <pre>
+men_means = (90.5, 89.5, 88.7, 88.5, 85.2, 86.6)
+women_means = (92.7, 87.0, 90.5, 85.0, 89.5, 89.8)
+ind = np.arange(len(men_means))
+width = 0.35
+plt.bar(ind - width/2, men_means, width, label='男生平均成绩')
+plt.bar(ind + width/2, women_means, width, label='女生平均成绩')
+plt.title('高二各班男生、女生英语平均成绩')
+plt.ylabel('分数')
+plt.xticks(ind, ['高二1班','高二2班','高二3班','高二4班','高二5班','高二6班'])
+plt.axhline(88.5, ls='--', label='全体平均成绩')
+plt.legend()
+plt.show()</pre>
+            </div>
+        </div>
+
+        <!-- 阿里巴巴GMV模型 -->
+        <div class="model-section">
+            <h3>📊 模型6: 阿里巴巴GMV数据</h3>
+            <div class="chart-container">
+                <canvas id="gmvChart"></canvas>
+            </div>
+            <div class="code-section">
+                <h5>Python 源码:</h5>
+                <pre>
+x = np.arange(1,8)
+y = [10770, 16780, 24440, 30920, 37670, 48200, 57270]
+bar_rects = plt.bar(x, y, tick_label=["FY2013","FY2014","FY2015","FY2016",
+                     "FY2017","FY2018","FY2019"], width=0.5)
+plt.ylabel('GMV（亿元)')
+# 添加数据标签
+for rect in bar_rects:
+    height = rect.get_height()
+    plt.text(rect.get_x() + rect.get_width()/2, height + 300, 
+             f'{height}', ha='center', va='bottom')
+plt.show()</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化所有图表
+        document.addEventListener('DOMContentLoaded', function() {
+            initSineCosineChart();
+            initAlipayChart();
+            initMovieChart();
+            initCarChart();
+            initEnglishChart();
+            initGmvChart();
+        });
+
+        // ========== 正弦余弦曲线 ==========
+        let sineCosineChart;
+        function initSineCosineChart() {
+            const ctx = document.getElementById('sineCosineChart').getContext('2d');
+            const x = Array.from({length: 256}, (_, i) => -Math.PI + (2 * Math.PI * i) / 255);
+            
+            sineCosineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: x,
+                    datasets: [
+                        {
+                            label: '正弦',
+                            data: x.map(val => Math.sin(val)),
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: '余弦',
+                            data: x.map(val => Math.cos(val)),
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '正弦曲线和余弦曲线',
+                            color: 'white',
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'x轴',
+                                color: 'white'
+                            },
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'y轴',
+                                color: 'white'
+                            },
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateSineCosine() {
+            const x = Array.from({length: 256}, (_, i) => -Math.PI + (2 * Math.PI * i) / 255);
+            const amplitude = 0.5 + Math.random() * 0.5;
+            const frequency = 0.5 + Math.random();
+            
+            sineCosineChart.data.datasets[0].data = x.map(val => amplitude * Math.sin(frequency * val));
+            sineCosineChart.data.datasets[1].data = x.map(val => amplitude * Math.cos(frequency * val));
+            sineCosineChart.update();
+        }
+
+        function resetSineCosine() {
+            const x = Array.from({length: 256}, (_, i) => -Math.PI + (2 * Math.PI * i) / 255);
+            sineCosineChart.data.datasets[0].data = x.map(val => Math.sin(val));
+            sineCosineChart.data.datasets[1].data = x.map(val => Math.cos(val));
+            sineCosineChart.update();
+        }
+
+        // ========== 支付宝月账单 ==========
+        let alipayChart;
+        function initAlipayChart() {
+            const ctx = document.getElementById('alipayChart').getContext('2d');
+            
+            alipayChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['购物', '人情往来', '餐饮美食', '通信物流', '生活日用', '交通出行', '休闲娱乐', '其他'],
+                    datasets: [{
+                        data: [26.7, 3.3, 33.3, 6.7, 10.0, 4.7, 8.7, 6.7],
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '支付宝月账单报告',
+                            color: 'white',
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            position: 'right',
+                            labels: { color: 'white' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateAlipay() {
+            const newData = Array.from({length: 8}, () => Math.random() * 30 + 5);
+            const total = newData.reduce((a, b) => a + b, 0);
+            const normalizedData = newData.map(val => (val / total) * 100);
+            
+            alipayChart.data.datasets[0].data = normalizedData;
+            alipayChart.update();
+        }
+
+        function resetAlipay() {
+            alipayChart.data.datasets[0].data = [26.7, 3.3, 33.3, 6.7, 10.0, 4.7, 8.7, 6.7];
+            alipayChart.update();
+        }
+
+        // ========== 电影票房 ==========
+        function initMovieChart() {
+            const ctx = document.getElementById('movieChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ["哪吒之魔童降世", "流浪地球", "复仇者联盟4", "疯狂的外星人", "飞驰人生", "烈火英雄"],
+                    datasets: [{
+                        label: '票房（亿元）',
+                        data: [48.57, 46.18, 42.05, 21.83, 17.03, 16.70],
+                        backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                        borderColor: 'rgb(255, 159, 64)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '电影票房排名',
+                            color: 'white',
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '总票房（亿元）',
+                                color: 'white'
+                            },
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ========== 汽车制动距离 ==========
+        function initCarChart() {
+            const ctx = document.getElementById('carChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '制动距离',
+                        data: [
+                            {x: 10, y: 0.5}, {x: 20, y: 2.0}, {x: 30, y: 4.4}, {x: 40, y: 7.9},
+                            {x: 50, y: 12.3}, {x: 60, y: 17.7}, {x: 70, y: 24.1}, {x: 80, y: 31.5},
+                            {x: 90, y: 39.9}, {x: 100, y: 49.2}, {x: 110, y: 59.5}, {x: 120, y: 70.8},
+                            {x: 130, y: 83.1}, {x: 140, y: 96.4}, {x: 150, y: 110.7}, {x: 160, y: 126.0},
+                            {x: 170, y: 142.2}, {x: 180, y: 159.4}, {x: 190, y: 177.6}, {x: 200, y: 196.8}
+                        ],
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                        borderColor: 'rgb(54, 162, 235)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '汽车速度与制动距离的关系',
+                            color: 'white',
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '速度(km/h)',
+                                color: 'white'
+                            },
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '制动距离(m)',
+                                color: 'white'
+                            },
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ========== 英语成绩 ==========
+        function initEnglishChart() {
+            const ctx = document.getElementById('englishChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['高二1班', '高二2班', '高二3班', '高二4班', '高二5班', '高二6班'],
+                    datasets: [
+                        {
+                            label: '男生平均成绩',
+                            data: [90.5, 89.5, 88.7, 88.5, 85.2, 86.6],
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                            borderColor: 'rgb(54, 162, 235)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '女生平均成绩',
+                            data: [92.7, 87.0, 90.5, 85.0, 89.5, 89.8],
+                            backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                            borderColor: 'rgb(255, 99, 132)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '高二各班男生、女生英语平均成绩',
+                            color: 'white',
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: '分数',
+                                color: 'white'
+                            },
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            min: 80,
+                            max: 95
+                        },
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ========== 阿里巴巴GMV ==========
+        function initGmvChart() {
+            const ctx = document.getElementById('gmvChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ["FY2013", "FY2014", "FY2015", "FY2016", "FY2017", "FY2018", "FY2019"],
+                    datasets: [{
+                        label: 'GMV（亿元）',
+                        data: [10770, 16780, 24440, 30920, 37670, 48200, 57270],
+                        backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                        borderColor: 'rgb(75, 192, 192)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '2013-2019财年阿里巴巴淘宝和天猫平台的GMV',
+                            color: 'white',
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            labels: { color: 'white' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'GMV（亿元)',
+                                color: 'white'
+                            },
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
