@@ -127,6 +127,27 @@
             margin: 15px 0;
         }
         
+        .ingredient-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .ingredient-table th, .ingredient-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .ingredient-table th {
+            background: rgba(255,255,255,0.2);
+            font-weight: bold;
+        }
+        
         @media (max-width: 768px) {
             .input-row {
                 grid-template-columns: 1fr;
@@ -144,6 +165,10 @@
             .btn-teaching {
                 width: 100%;
                 max-width: 300px;
+            }
+            
+            .ingredient-table {
+                font-size: 12px;
             }
         }
         
@@ -204,15 +229,18 @@
                 <pre>
 import numpy as np
 import matplotlib.pyplot as plt
-
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
 x = np.linspace(-np.pi, np.pi, 256, endpoint=True)
 y1, y2 = np.sin(x), np.cos(x)
 plt.plot(x, y1, x, y2)
+# 设置 x 轴和 y 轴的标签
 plt.xlabel("x轴")
 plt.ylabel("y轴")
-plt.title("正弦曲线和余弦曲线")
-plt.legend(['正弦', '余弦'])
-plt.grid(True)
+# 设置 x 轴的刻度范围和刻度标签
+plt.xlim(x.min() * 1.5, x.max() * 1.5)
+plt.xticks([-np.pi, -np.pi/2, 0, np.pi/2, np.pi], 
+           [r'$-\pi$', r'$-\pi/2$', r'$0$', r'$\pi/2$', r'$\pi$'])
 plt.show()</pre>
             </div>
         </div>
@@ -278,11 +306,11 @@ plt.show()</pre>
                 <h5>📝 自定义数据输入</h5>
                 <div class="control-group">
                     <label>电影票房数据 (逗号分隔，单位:亿元):</label>
-                    <input type="text" id="movieData" value="48.57,46.18,42.05,21.83,17.03,16.70">
+                    <input type="text" id="movieData" value="48.57,46.18,42.05,21.83,17.03,16.70,14.01,13.84,12.85,11.38,10.25,9.46,9.27,8.88,8.64">
                 </div>
                 <div class="control-group">
                     <label>电影名称 (逗号分隔):</label>
-                    <input type="text" id="movieLabels" value="哪吒之魔童降世,流浪地球,复仇者联盟4,疯狂的外星人,飞驰人生,烈火英雄">
+                    <textarea id="movieLabels" rows="3">哪吒之魔童降世,流浪地球,复仇者联盟4:终局之战,疯狂的外星人,飞驰人生,烈火英雄,蜘蛛侠:英雄远征,速度与激情:特别行动,扫毒2天地对决,大黄蜂,惊奇队长,比悲伤更悲伤的故事,哥斯拉2:怪兽之王,阿丽塔:战斗天使,银河补习班</textarea>
                 </div>
                 <div class="button-group">
                     <button class="btn-teaching" onclick="updateMovieChart()">应用自定义数据</button>
@@ -294,12 +322,26 @@ plt.show()</pre>
             <div class="code-section">
                 <h5>Python 源码:</h5>
                 <pre>
-labels = ["哪吒之魔童降世","流浪地球","复仇者联盟4","疯狂的外星人","飞驰人生","烈火英雄"]
-bar_width = [48.57, 46.18, 42.05, 21.83, 17.03, 16.70]
-plt.barh(range(len(labels)), bar_width, color='orange')
-plt.xlabel("总票房（亿元）")
-plt.ylabel("电影名称")
-plt.yticks(range(len(labels)), labels)
+import matplotlib.pyplot as plt
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams["axes.unicode_minus"] = False
+labels = ["哪吒之魔童降世", "流浪地球", "复仇者联盟4:终局之战", 
+          "疯狂的外星人", "飞驰人生", "烈火英雄", "蜘蛛侠:英雄远征", 
+          "速度与激情:特别行动", "扫毒2天地对决", "大黄蜂","惊奇队长", 
+          "比悲伤更悲伤的故事", "哥斯拉2:怪兽之王", "阿丽塔:战斗天使", 
+          "银河补习班"]
+bar_width = [48.57, 46.18, 42.05, 21.83, 17.03, 16.70, 14.01, 13.84, 
+             12.85, 11.38, 10.25, 9.46, 9.27, 8.88, 8.64]
+y_data = range(len(labels))
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.barh(y_data, bar_width, height=0.2, color='orange') 
+# 设置 x 轴和 y 轴的标签
+ax.set_xlabel("总票房(亿元)")
+ax.set_ylabel("电影名称")
+# 设置 y 轴的刻度线位置、刻度标签
+ax.set_yticks(y_data)
+ax.set_yticklabels(labels)
 plt.show()</pre>
             </div>
         </div>
@@ -429,6 +471,69 @@ for rect in bar_rects:
     height = rect.get_height()
     plt.text(rect.get_x() + rect.get_width()/2, height + 300, 
              f'{height}', ha='center', va='bottom')
+plt.show()</pre>
+            </div>
+        </div>
+
+        <!-- 果酱面包配料模型 -->
+        <div class="model-section">
+            <h3>🍞 模型7: 果酱面包配料比例</h3>
+            <div class="chart-wrapper">
+                <canvas id="breadChart"></canvas>
+            </div>
+            
+            <!-- 配料表格 -->
+            <div class="data-input-panel">
+                <h5>📋 配料表格</h5>
+                <table class="ingredient-table" id="breadTable">
+                    <thead>
+                        <tr>
+                            <th>配料名称</th>
+                            <th>重量(g)</th>
+                            <th>比例(%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="breadTableBody">
+                        <!-- 表格内容将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 数据输入面板 -->
+            <div class="data-input-panel">
+                <h5>📝 自定义配料数据</h5>
+                <div class="control-group">
+                    <label>配料名称 (逗号分隔):</label>
+                    <input type="text" id="breadLabels" value="面粉,全麦粉,酵母,苹果酱,鸡蛋,黄油,盐,白糖">
+                </div>
+                <div class="control-group">
+                    <label>配料重量 (逗号分隔，单位:g):</label>
+                    <input type="text" id="breadWeights" value="250,150,4,250,50,30,4,20">
+                </div>
+                <div class="button-group">
+                    <button class="btn-teaching" onclick="updateBreadChart()">应用自定义数据</button>
+                    <button class="btn-teaching" onclick="generateRandomBread()">生成随机数据</button>
+                    <button class="btn-teaching" onclick="resetBread()">重置数据</button>
+                </div>
+            </div>
+            
+            <div class="code-section">
+                <h5>Python 源码:</h5>
+                <pre>
+import matplotlib.pyplot as plt
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
+kinds = ['面粉', '全麦粉', '酵母', '苹果酱', '鸡蛋', '黄油', '盐', '白糖']
+weight = [250, 150, 4, 250, 50, 30, 4, 20]
+total_weight = 0
+for i in weight:
+    total_weight += i
+batching_scale = [i / total_weight for i in weight]
+plt.pie(batching_scale, autopct='%3.1f%%')
+plt.legend(kinds, loc='upper right', bbox_to_anchor=[1.1, 1.1])  
+# 添加表格
+plt.table(cellText=[weight], cellLoc='center', rowLabels=['重量(g)'], 
+          colLabels=kinds, loc='lower center')
 plt.show()</pre>
             </div>
         </div>
@@ -618,10 +723,15 @@ plt.show()</pre>
             teachingCharts.movie = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ["哪吒之魔童降世", "流浪地球", "复仇者联盟4", "疯狂的外星人", "飞驰人生", "烈火英雄"],
+                    labels: ["哪吒之魔童降世", "流浪地球", "复仇者联盟4:终局之战", 
+                            "疯狂的外星人", "飞驰人生", "烈火英雄", "蜘蛛侠:英雄远征", 
+                            "速度与激情:特别行动", "扫毒2天地对决", "大黄蜂", "惊奇队长", 
+                            "比悲伤更悲伤的故事", "哥斯拉2:怪兽之王", "阿丽塔:战斗天使", 
+                            "银河补习班"],
                     datasets: [{
                         label: '票房（亿元）',
-                        data: [48.57, 46.18, 42.05, 21.83, 17.03, 16.70],
+                        data: [48.57, 46.18, 42.05, 21.83, 17.03, 16.70, 14.01, 13.84, 
+                               12.85, 11.38, 10.25, 9.46, 9.27, 8.88, 8.64],
                         backgroundColor: 'rgba(255, 159, 64, 0.8)',
                         borderColor: 'rgb(255, 159, 64)',
                         borderWidth: 1
@@ -640,6 +750,13 @@ plt.show()</pre>
                         },
                         legend: {
                             labels: { color: 'white' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `票房: ${context.parsed.x} 亿元`;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -653,7 +770,12 @@ plt.show()</pre>
                             grid: { color: 'rgba(255,255,255,0.1)' }
                         },
                         y: {
-                            ticks: { color: 'white' },
+                            ticks: { 
+                                color: 'white',
+                                font: {
+                                    size: 11 // 调整字体大小以适应长电影名
+                                }
+                            },
                             grid: { color: 'rgba(255,255,255,0.1)' }
                         }
                     }
@@ -675,8 +797,8 @@ plt.show()</pre>
         }
 
         function generateRandomMovie() {
-            const length = 6;
-            const data = Array.from({length}, () => (Math.random() * 50 + 10).toFixed(2));
+            const length = 15;
+            const data = Array.from({length}, () => (Math.random() * 50 + 5).toFixed(2));
             const labels = Array.from({length}, (_, i) => `电影${i+1}`);
             
             document.getElementById('movieData').value = data.join(',');
@@ -685,8 +807,8 @@ plt.show()</pre>
         }
 
         function resetMovie() {
-            document.getElementById('movieData').value = "48.57,46.18,42.05,21.83,17.03,16.70";
-            document.getElementById('movieLabels').value = "哪吒之魔童降世,流浪地球,复仇者联盟4,疯狂的外星人,飞驰人生,烈火英雄";
+            document.getElementById('movieData').value = "48.57,46.18,42.05,21.83,17.03,16.70,14.01,13.84,12.85,11.38,10.25,9.46,9.27,8.88,8.64";
+            document.getElementById('movieLabels').value = "哪吒之魔童降世,流浪地球,复仇者联盟4:终局之战,疯狂的外星人,飞驰人生,烈火英雄,蜘蛛侠:英雄远征,速度与激情:特别行动,扫毒2天地对决,大黄蜂,惊奇队长,比悲伤更悲伤的故事,哥斯拉2:怪兽之王,阿丽塔:战斗天使,银河补习班";
             updateMovieChart();
         }
 
@@ -950,6 +1072,107 @@ plt.show()</pre>
             updateGmvChart();
         }
 
+        // ========== 果酱面包配料模型 ==========
+        function initBreadChart() {
+            const ctx = document.getElementById('breadChart').getContext('2d');
+            
+            teachingCharts.bread = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['面粉', '全麦粉', '酵母', '苹果酱', '鸡蛋', '黄油', '盐', '白糖'],
+                    datasets: [{
+                        data: [250, 150, 4, 250, 50, 30, 4, 20],
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#8AC926', '#1982C4'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '果酱面包配料比例',
+                            color: 'white',
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            position: 'right',
+                            labels: { color: 'white' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value}g (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            updateBreadTable();
+        }
+
+        function updateBreadChart() {
+            try {
+                const labels = document.getElementById('breadLabels').value.split(',').map(label => label.trim());
+                const weights = document.getElementById('breadWeights').value.split(',').map(val => parseFloat(val.trim()));
+                
+                teachingCharts.bread.data.labels = labels;
+                teachingCharts.bread.data.datasets[0].data = weights;
+                teachingCharts.bread.update();
+                
+                updateBreadTable();
+            } catch (error) {
+                alert('数据格式错误！请确保输入的是用逗号分隔的数字。');
+            }
+        }
+
+        function updateBreadTable() {
+            const tableBody = document.getElementById('breadTableBody');
+            const labels = teachingCharts.bread.data.labels;
+            const weights = teachingCharts.bread.data.datasets[0].data;
+            const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+            
+            tableBody.innerHTML = '';
+            
+            labels.forEach((label, index) => {
+                const weight = weights[index];
+                const percentage = ((weight / totalWeight) * 100).toFixed(1);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${label}</td>
+                    <td>${weight}g</td>
+                    <td>${percentage}%</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function generateRandomBread() {
+            const length = 8;
+            const weights = Array.from({length}, () => Math.floor(Math.random() * 200 + 10));
+            const labels = Array.from({length}, (_, i) => `配料${i+1}`);
+            
+            document.getElementById('breadLabels').value = labels.join(',');
+            document.getElementById('breadWeights').value = weights.join(',');
+            updateBreadChart();
+        }
+
+        function resetBread() {
+            document.getElementById('breadLabels').value = "面粉,全麦粉,酵母,苹果酱,鸡蛋,黄油,盐,白糖";
+            document.getElementById('breadWeights').value = "250,150,4,250,50,30,4,20";
+            updateBreadChart();
+        }
+
         // ========== 初始化所有图表 ==========
         function initTeachingCharts() {
             initSineCosineChart();
@@ -958,6 +1181,7 @@ plt.show()</pre>
             initCarChart();
             initEnglishChart();
             initGmvChart();
+            initBreadChart();
         }
 
         // ========== 全局功能 ==========
@@ -968,6 +1192,7 @@ plt.show()</pre>
             resetCar();
             resetEnglish();
             resetGmv();
+            resetBread();
             alert('所有教学模型已重置！');
         }
 
@@ -978,6 +1203,7 @@ plt.show()</pre>
             generateRandomCar();
             generateRandomEnglish();
             generateRandomGmv();
+            generateRandomBread();
             alert('已为所有模型生成随机数据！');
         }
     </script>
