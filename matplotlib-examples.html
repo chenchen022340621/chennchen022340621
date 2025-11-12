@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matplotlib 图形展示 - ChenChen 数据可视化平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .graph-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .graph-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .graph-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .graph-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        .graph-wrapper {
+            height: 400px;
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .graph-wrapper canvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+            background: white;
+        }
+        
+        .graph-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: white;
+            font-size: 1.3em;
+        }
+        
+        .btn-custom {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-custom:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .graph-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .graph-wrapper {
+                height: 300px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>📊 Matplotlib 图形展示</h1>
+            <p class="lead">五个经典Matplotlib数据可视化实例 - 纯图形展示</p>
+            <div class="button-group">
+                <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+                <button class="btn-custom" onclick="refreshAllCharts()">🔄 刷新所有图形</button>
+            </div>
+        </div>
+
+        <div class="graph-container">
+            <div class="graph-grid">
+                <!-- 图形1：图书采购情况 -->
+                <div class="graph-item">
+                    <h5 class="graph-title">实例1：两个地区对不同种类图书的采购情况</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="graph1"></canvas>
+                    </div>
+                </div>
+
+                <!-- 图形2：汇率走势 -->
+                <div class="graph-item">
+                    <h5 class="graph-title">实例2：2017年7月与2019年7月美元/人民币汇率走势</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="graph2"></canvas>
+                    </div>
+                </div>
+
+                <!-- 图形3：产品销售额 -->
+                <div class="graph-item">
+                    <h5 class="graph-title">实例3：不同产品各季度的销售额</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="graph3"></canvas>
+                    </div>
+                </div>
+
+                <!-- 图形4：温度走势 -->
+                <div class="graph-item">
+                    <h5 class="graph-title">实例4：未来15天的最高气温和最低气温</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="graph4"></canvas>
+                    </div>
+                </div>
+
+                <!-- 图形5：科赫雪花 -->
+                <div class="graph-item">
+                    <h5 class="graph-title">实例5：彩色的"雪花" - 科赫雪花分形</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="graph5"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+            <button class="btn-custom" onclick="refreshAllCharts()">🔄 刷新图形</button>
+        </div>
+    </div>
+
+    <script>
+        // 初始化所有图形
+        function initializeAllCharts() {
+            // 图形1：图书采购情况（堆叠柱状图）
+            const ctx1 = document.getElementById('graph1').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['家庭', '小说', '心理', '科技', '儿童'],
+                    datasets: [
+                        {
+                            label: '地区1',
+                            data: [1200, 2400, 1800, 2200, 1600],
+                            backgroundColor: '#FFCC00',
+                            borderColor: '#FFCC00',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '地区2',
+                            data: [1050, 2100, 1300, 1600, 1340],
+                            backgroundColor: '#B0C4DE',
+                            borderColor: '#B0C4DE',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '地区1和地区2对各类图书的采购情况',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '图书种类',
+                                font: { weight: 'bold' }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '采购数量(本)',
+                                font: { weight: 'bold' }
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 图形2：汇率走势（折线图）
+            const ctx2 = document.getElementById('graph2').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['3','4','5','6','7','8','9','10','11','12','13','14','17','18','19','24','25','26','31'],
+                    datasets: [
+                        {
+                            label: '2017年7月美元/人民币汇率',
+                            data: [6.8007,6.8007,6.8015,6.8015,6.8060,6.8060,6.8060,6.8036,6.8025,6.7877,6.7835,6.7758,6.7700,6.7463,6.7519,6.7511,6.7511,6.7539,6.7265],
+                            borderColor: '#006374',
+                            backgroundColor: 'rgba(0, 99, 116, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1
+                        },
+                        {
+                            label: '2019年7月美元/人民币汇率',
+                            data: [6.8640,6.8705,6.8697,6.8697,6.8697,6.8881,6.8853,6.8856,6.8677,6.8662,6.8662,6.8662,6.8827,6.8761,6.8635,6.8860,6.8737,6.8796,6.8841],
+                            borderColor: '#8a2e76',
+                            backgroundColor: 'rgba(138, 46, 118, 0.1)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '2017年7月与2019年7月美元/人民币汇率走势',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '日期',
+                                font: { weight: 'bold' }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '汇率',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 图形3：产品销售额（多线折线图）
+            const ctx3 = document.getElementById('graph3').getContext('2d');
+            new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: ['第1季度', '第2季度', '第3季度', '第4季度'],
+                    datasets: [
+                        {
+                            label: '产品A',
+                            data: [2144, 4617, 7674, 6666],
+                            borderColor: 'blue',
+                            backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                            pointStyle: 'rect',
+                            pointBackgroundColor: 'blue',
+                            pointBorderColor: 'blue',
+                            pointRadius: 6,
+                            tension: 0.1
+                        },
+                        {
+                            label: '产品B',
+                            data: [853, 1214, 2414, 4409],
+                            borderColor: 'green',
+                            backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                            borderDash: [5, 5],
+                            pointStyle: 'triangle',
+                            pointBackgroundColor: 'green',
+                            pointBorderColor: 'green',
+                            pointRadius: 6,
+                            tension: 0.1
+                        },
+                        {
+                            label: '产品C',
+                            data: [153, 155, 292, 680],
+                            borderColor: 'red',
+                            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                            borderDash: [10, 5],
+                            pointStyle: 'circle',
+                            pointBackgroundColor: 'red',
+                            pointBorderColor: 'red',
+                            pointRadius: 6,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '不同产品各季度的销售额',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: '销售额(万元)',
+                                font: { weight: 'bold' }
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 图形4：温度走势（带数据标签）
+            const ctx4 = document.getElementById('graph4').getContext('2d');
+            new Chart(ctx4, {
+                type: 'line',
+                data: {
+                    labels: ['4','5','6','7','8','9','10','11','12','13','14','15','16','17','18'],
+                    datasets: [
+                        {
+                            label: '最高温度',
+                            data: [32,33,34,34,33,31,30,29,30,29,26,23,21,25,31],
+                            borderColor: 'red',
+                            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                            pointBackgroundColor: 'red',
+                            pointBorderColor: 'red',
+                            pointRadius: 4,
+                            tension: 0.3
+                        },
+                        {
+                            label: '最低温度',
+                            data: [19,19,20,22,22,21,22,16,18,18,17,14,15,16,16],
+                            borderColor: 'blue',
+                            backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                            pointBackgroundColor: 'blue',
+                            pointBorderColor: 'blue',
+                            pointRadius: 4,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '未来15天最高气温和最低气温的走势',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '日期',
+                                font: { weight: 'bold' }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '温度(°C)',
+                                font: { weight: 'bold' }
+                            },
+                            min: 10,
+                            max: 40
+                        }
+                    }
+                }
+            });
+
+            // 图形5：科赫雪花（自定义图形）
+            const ctx5 = document.getElementById('graph5').getContext('2d');
+            
+            // 生成科赫雪花坐标
+            const snowflakeData = generateKochSnowflake(3);
+            
+            new Chart(ctx5, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '科赫雪花',
+                        data: snowflakeData,
+                        backgroundColor: 'rgba(255, 160, 122, 0.6)',
+                        borderColor: 'rgba(255, 69, 0, 1)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        showLine: true,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '彩色的"雪花" - 科赫雪花分形',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: false
+                        },
+                        y: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // 生成科赫雪花坐标
+        function generateKochSnowflake(iterations) {
+            // 初始三角形顶点
+            let points = [
+                {x: 0, y: -8},
+                {x: 6.93, y: 4},
+                {x: -6.93, y: 4},
+                {x: 0, y: -8}  // 闭合三角形
+            ];
+            
+            // 递归细分
+            for (let i = 0; i < iterations; i++) {
+                points = subdivideKoch(points);
+            }
+            
+            return points;
+        }
+
+        function subdivideKoch(points) {
+            const newPoints = [];
+            
+            for (let i = 0; i < points.length - 1; i++) {
+                const p1 = points[i];
+                const p2 = points[i + 1];
+                
+                // 添加第一个点
+                newPoints.push(p1);
+                
+                // 计算三等分点
+                const dx = (p2.x - p1.x) / 3;
+                const dy = (p2.y - p1.y) / 3;
+                
+                const pA = {x: p1.x + dx, y: p1.y + dy};
+                const pC = {x: p1.x + 2 * dx, y: p1.y + 2 * dy};
+                
+                // 计算突出的顶点
+                const angle = Math.atan2(dy, dx);
+                const length = Math.sqrt(dx * dx + dy * dy);
+                
+                const pB = {
+                    x: p1.x + 1.5 * dx - length * Math.sin(angle) * Math.sqrt(3) / 2,
+                    y: p1.y + 1.5 * dy + length * Math.cos(angle) * Math.sqrt(3) / 2
+                };
+                
+                // 添加新点
+                newPoints.push(pA);
+                newPoints.push(pB);
+                newPoints.push(pC);
+            }
+            
+            // 添加最后一个点以闭合图形
+            newPoints.push(points[points.length - 1]);
+            
+            return newPoints;
+        }
+
+        // 刷新所有图形
+        function refreshAllCharts() {
+            const chartCanvases = ['graph1', 'graph2', 'graph3', 'graph4', 'graph5'];
+            chartCanvases.forEach(id => {
+                const canvas = document.getElementById(id);
+                const chart = Chart.getChart(canvas);
+                if (chart) {
+                    chart.destroy();
+                }
+            });
+            
+            initializeAllCharts();
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAllCharts();
+        });
+    </script>
+</body>
+</html>
