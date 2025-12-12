@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matplotlib 子图与布局 - ChenChen 数据可视化平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .exercise-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .exercise-title {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: white;
+            font-size: 1.8em;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+        }
+        
+        .subplot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .chart-wrapper {
+            height: 400px;
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .chart-wrapper canvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+            background: white;
+        }
+        
+        .exercise-description {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+        
+        .btn-custom {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-custom:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .subplot-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: white;
+            font-size: 1.2em;
+        }
+        
+        @media (max-width: 768px) {
+            .subplot-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .exercise-title {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>📐 Matplotlib 子图与布局</h1>
+            <p class="lead">第五章：子图与布局练习题展示</p>
+            <div class="button-group">
+                <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+                <button class="btn-custom" onclick="refreshAllCharts()">🔄 刷新所有图表</button>
+            </div>
+        </div>
+
+        <!-- 练习1：plt.subplot() 基础 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">练习1：plt.subplot() 基础 - 2×1布局</h3>
+            <div class="exercise-description">
+                <p><strong>知识点：</strong>plt.subplot()</p>
+                <p><strong>目标：</strong>使用 plt.subplot() 在一个 2×1 的布局中，分别绘制条形图和折线图。</p>
+                <p><strong>数据：</strong>智能手表和蓝牙耳机的季度销量数据。</p>
+            </div>
+            <div class="subplot-grid">
+                <div class="chart-container">
+                    <h5 class="subplot-title">智能手表季度销量（条形图）</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise1_chart1"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h5 class="subplot-title">蓝牙耳机季度销量（折线图）</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise1_chart2"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 练习2：plt.subplots() 与坐标轴共享 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">练习2：plt.subplots() 与坐标轴共享</h3>
+            <div class="exercise-description">
+                <p><strong>知识点：</strong>plt.subplots() 和 sharey=True</p>
+                <p><strong>目标：</strong>使用 plt.subplots() 创建一个 1×2 的布局，并让两个子图共享 Y 轴。</p>
+                <p><strong>数据：</strong>不同社交平台用户性别比例。</p>
+            </div>
+            <div class="subplot-grid">
+                <div class="chart-container">
+                    <h5 class="subplot-title">各平台男性用户（百万）</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise2_chart1"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h5 class="subplot-title">各平台女性用户（百万）</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise2_chart2"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 练习3：plt.subplot2grid() 非对称布局 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">练习3：plt.subplot2grid() 非对称布局</h3>
+            <div class="exercise-description">
+                <p><strong>知识点：</strong>plt.subplot2grid()，使用 rowspan 和 colspan</p>
+                <p><strong>目标：</strong>使用 plt.subplot2grid() 创建一个 2×2 的非对称网格布局。</p>
+                <p><strong>数据：</strong>网站流量分析和访问来源。</p>
+            </div>
+            <div class="subplot-grid">
+                <div class="chart-container">
+                    <h5 class="subplot-title">2023年访问来源（饼图）</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise3_chart1"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h5 class="subplot-title">2024年访问来源（饼图）</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise3_chart2"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container" style="grid-column: span 2;">
+                    <h5 class="subplot-title">月度访问量（条形图）</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise3_chart3"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 练习4：ax.twinx() 双坐标轴 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">练习4：ax.twinx() 双坐标轴</h3>
+            <div class="exercise-description">
+                <p><strong>知识点：</strong>ax.twinx()</p>
+                <p><strong>目标：</strong>在同一个图表中使用两个Y轴（左侧和右侧）来展示不同尺度的数据。</p>
+                <p><strong>数据：</strong>某股票月度价格与成交量。</p>
+            </div>
+            <div class="chart-container" style="max-width: 800px; margin: 0 auto;">
+                <h5 class="subplot-title">股票月度价格与成交量（双坐标轴）</h5>
+                <div class="chart-wrapper">
+                    <canvas id="exercise4_chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 练习5：GridSpec 自定义布局 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">练习5：GridSpec 自定义布局</h3>
+            <div class="exercise-description">
+                <p><strong>知识点：</strong>matplotlib.gridspec.GridSpec 和 constrained_layout=True</p>
+                <p><strong>目标：</strong>使用 GridSpec 来创建灵活的 2×2 布局。</p>
+                <p><strong>数据：</strong>大学年度招生情况。</p>
+            </div>
+            <div class="subplot-grid">
+                <div class="chart-container" style="grid-column: span 2;">
+                    <h5 class="subplot-title">大学年度总招生人数（折线图）</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise5_chart1"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h5 class="subplot-title">各学院招生比例（饼图）</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise5_chart2"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h5 class="subplot-title">各学院招生人数（条形图）</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise5_chart3"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+            <a href="matplotlib-examples.html" class="btn-custom">📊 Matplotlib图形</a>
+            <a href="teaching-models.html" class="btn-custom">🎓 查看教学模型</a>
+            <button class="btn-custom" onclick="refreshAllCharts()">🔄 刷新图表</button>
+        </div>
+    </div>
+
+    <script>
+        // 初始化所有图表
+        function initializeAllCharts() {
+            // 练习1：plt.subplot() 基础
+            // 图表1：智能手表季度销量（条形图）
+            const ctx1_1 = document.getElementById('exercise1_chart1').getContext('2d');
+            new Chart(ctx1_1, {
+                type: 'bar',
+                data: {
+                    labels: ['第一季度', '第二季度', '第三季度', '第四季度'],
+                    datasets: [{
+                        label: '智能手表销量',
+                        data: [120, 150, 130, 180],
+                        backgroundColor: '#FF6384',
+                        borderColor: '#FF6384',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '智能手表季度销量',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '销量（万台）',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 图表2：蓝牙耳机季度销量（折线图）
+            const ctx1_2 = document.getElementById('exercise1_chart2').getContext('2d');
+            new Chart(ctx1_2, {
+                type: 'line',
+                data: {
+                    labels: ['第一季度', '第二季度', '第三季度', '第四季度'],
+                    datasets: [{
+                        label: '蓝牙耳机销量',
+                        data: [200, 180, 220, 250],
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '蓝牙耳机季度销量',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '销量（万台）',
+                                font: { weight: 'bold' }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '季度',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 练习2：plt.subplots() 与坐标轴共享
+            // 图表1：各平台男性用户
+            const ctx2_1 = document.getElementById('exercise2_chart1').getContext('2d');
+            new Chart(ctx2_1, {
+                type: 'bar',
+                data: {
+                    labels: ['微博', 'B站', '抖音', '小红书', '知乎'],
+                    datasets: [{
+                        label: '男性用户',
+                        data: [55, 45, 50, 30, 60],
+                        backgroundColor: '#4BC0C0',
+                        borderColor: '#4BC0C0',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '各平台男性用户（百万）',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 80,
+                            title: {
+                                display: true,
+                                text: '用户数（百万）',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 图表2：各平台女性用户
+            const ctx2_2 = document.getElementById('exercise2_chart2').getContext('2d');
+            new Chart(ctx2_2, {
+                type: 'bar',
+                data: {
+                    labels: ['微博', 'B站', '抖音', '小红书', '知乎'],
+                    datasets: [{
+                        label: '女性用户',
+                        data: [45, 55, 50, 70, 40],
+                        backgroundColor: '#FF9F40',
+                        borderColor: '#FF9F40',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '各平台女性用户（百万）',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 80,
+                            title: {
+                                display: true,
+                                text: '用户数（百万）',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 练习3：plt.subplot2grid() 非对称布局
+            // 图表1：2023年访问来源（饼图）
+            const ctx3_1 = document.getElementById('exercise3_chart1').getContext('2d');
+            new Chart(ctx3_1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['直接访问', '搜索引擎', '社交媒体', '推荐链接'],
+                    datasets: [{
+                        data: [20, 40, 30, 10],
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '2023年访问来源',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    }
+                }
+            });
+
+            // 图表2：2024年访问来源（饼图）
+            const ctx3_2 = document.getElementById('exercise3_chart2').getContext('2d');
+            new Chart(ctx3_2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['直接访问', '搜索引擎', '社交媒体', '推荐链接'],
+                    datasets: [{
+                        data: [15, 35, 40, 10],
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '2024年访问来源',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    }
+                }
+            });
+
+            // 图表3：月度访问量（条形图）
+            const ctx3_3 = document.getElementById('exercise3_chart3').getContext('2d');
+            new Chart(ctx3_3, {
+                type: 'bar',
+                data: {
+                    labels: ['一月', '二月', '三月', '四月', '五月', '六月'],
+                    datasets: [{
+                        label: '访问量（百万）',
+                        data: [1.5, 1.8, 2.2, 2.0, 2.5, 2.8],
+                        backgroundColor: '#9966FF',
+                        borderColor: '#9966FF',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '月度访问量',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '访问量（百万）',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 练习4：ax.twinx() 双坐标轴
+            const ctx4 = document.getElementById('exercise4_chart').getContext('2d');
+            new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: ['一月', '二月', '三月', '四月', '五月', '六月'],
+                    datasets: [
+                        {
+                            label: '成交量（百万股）',
+                            data: [1.2, 1.5, 2.0, 1.8, 2.5, 3.0],
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '股价（元）',
+                            data: [100, 105, 115, 110, 120, 135],
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            borderWidth: 2,
+                            type: 'line',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '股票月度价格与成交量',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '月份',
+                                font: { weight: 'bold' }
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: '成交量（百万股）',
+                                font: { weight: 'bold' }
+                            },
+                            beginAtZero: true
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: '股价（元）',
+                                font: { weight: 'bold' }
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 练习5：GridSpec 自定义布局
+            // 图表1：大学年度总招生人数（折线图）
+            const ctx5_1 = document.getElementById('exercise5_chart1').getContext('2d');
+            new Chart(ctx5_1, {
+                type: 'line',
+                data: {
+                    labels: ['2021年', '2022年', '2023年', '2024年'],
+                    datasets: [{
+                        label: '总招生人数',
+                        data: [20000, 21500, 23000, 24000],
+                        borderColor: '#FF6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '大学年度总招生人数',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '招生人数',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 图表2：各学院招生比例（饼图）
+            const ctx5_2 = document.getElementById('exercise5_chart2').getContext('2d');
+            new Chart(ctx5_2, {
+                type: 'pie',
+                data: {
+                    labels: ['工学院', '文学院', '商学院', '理学院'],
+                    datasets: [{
+                        data: [8000, 5000, 6000, 4000],
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '各学院招生比例',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    }
+                }
+            });
+
+            // 图表3：各学院招生人数（条形图）
+            const ctx5_3 = document.getElementById('exercise5_chart3').getContext('2d');
+            new Chart(ctx5_3, {
+                type: 'bar',
+                data: {
+                    labels: ['工学院', '文学院', '商学院', '理学院'],
+                    datasets: [{
+                        label: '招生人数',
+                        data: [8000, 5000, 6000, 4000],
+                        backgroundColor: '#9966FF',
+                        borderColor: '#9966FF',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '各学院招生人数',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '招生人数',
+                                font: { weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 刷新所有图表
+        function refreshAllCharts() {
+            const chartIds = [
+                'exercise1_chart1', 'exercise1_chart2',
+                'exercise2_chart1', 'exercise2_chart2',
+                'exercise3_chart1', 'exercise3_chart2', 'exercise3_chart3',
+                'exercise4_chart',
+                'exercise5_chart1', 'exercise5_chart2', 'exercise5_chart3'
+            ];
+            
+            chartIds.forEach(id => {
+                const canvas = document.getElementById(id);
+                const chart = Chart.getChart(canvas);
+                if (chart) {
+                    chart.destroy();
+                }
+            });
+            
+            initializeAllCharts();
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAllCharts();
+        });
+    </script>
+</body>
+</html>
