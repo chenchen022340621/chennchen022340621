@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matplotlib 坐标轴定制 - ChenChen 数据可视化平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .exercise-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .exercise-title {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: white;
+            font-size: 1.8em;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+        }
+        
+        .axes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .chart-wrapper {
+            height: 400px;
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .chart-wrapper canvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+            background: white;
+        }
+        
+        .exercise-description {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+        
+        .btn-custom {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-custom:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .axes-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: white;
+            font-size: 1.2em;
+        }
+        
+        @media (max-width: 768px) {
+            .axes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .exercise-title {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>📏 Matplotlib 坐标轴定制</h1>
+            <p class="lead">第六章：坐标轴定制练习题展示</p>
+            <div class="button-group">
+                <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+                <button class="btn-custom" onclick="refreshAllCharts()">🔄 刷新所有图表</button>
+            </div>
+        </div>
+
+        <!-- 练习1：定制刻度位置、格式与样式 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">练习1：定制刻度位置、格式与样式</h3>
+            <div class="exercise-description">
+                <p><strong>目标：</strong>熟练掌握刻度位置、格式与样式的定制方法。</p>
+                <p><strong>任务：</strong>用股票价格数据绘制折线图，定制X轴的主次刻度位置、格式与样式，添加网格线。</p>
+                <p><strong>数据：</strong>48小时股票价格数据，每2小时一个点。</p>
+            </div>
+            <div class="axes-grid">
+                <div class="chart-container">
+                    <h5 class="axes-title">股票价格走势（48小时）</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise1_chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 练习2：添加图内坐标轴 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">练习2：添加图内坐标轴</h3>
+            <div class="exercise-description">
+                <p><strong>目标：</strong>掌握在图内添加辅助坐标轴的方法，实现"大图+小图"的效果。</p>
+                <p><strong>任务：</strong>用"大图+小图"展示销量数据，大图展示全国总销量，小图展示华东区销量。</p>
+                <p><strong>数据：</strong>全国总销量和华东区销量的月度数据。</p>
+            </div>
+            <div class="axes-grid">
+                <div class="chart-container">
+                    <h5 class="axes-title">全国销量与华东区销量对比</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise2_chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 练习3：隐藏部分轴脊 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">练习3：隐藏部分轴脊</h3>
+            <div class="exercise-description">
+                <p><strong>目标：</strong>掌握隐藏轴脊和刻度线的方法，提升图表简洁度。</p>
+                <p><strong>任务：</strong>用水平条形图展示编程语言投票数据，隐藏顶部和右侧轴脊，隐藏Y轴刻度线。</p>
+                <p><strong>数据：</strong>六种编程语言的投票数。</p>
+            </div>
+            <div class="axes-grid">
+                <div class="chart-container">
+                    <h5 class="axes-title">编程语言投票数</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise3_chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 练习4：移动轴脊到数据中心 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">练习4：移动轴脊到数据中心</h3>
+            <div class="exercise-description">
+                <p><strong>目标：</strong>掌握移动轴脊到数据中心的技巧，突出数据对称性。</p>
+                <p><strong>任务：</strong>绘制二次函数，隐藏顶部和右侧轴脊，将左右、底部轴脊移动到坐标原点(0,0)。</p>
+                <p><strong>数据：</strong>二次函数 y = x²，x范围[-5,5]。</p>
+            </div>
+            <div class="axes-grid">
+                <div class="chart-container">
+                    <h5 class="axes-title">二次函数 y = x²</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise4_chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 练习5：综合定制（轴脊+刻度） -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">练习5：综合定制（轴脊+刻度）</h3>
+            <div class="exercise-description">
+                <p><strong>目标：</strong>综合运用轴脊和刻度定制技巧，绘制专业数学函数图。</p>
+                <p><strong>任务：</strong>绘制正切函数，隐藏顶部和右侧轴脊并移动到原点，定制X轴刻度为π的倍数，限制Y轴范围。</p>
+                <p><strong>数据：</strong>正切函数 y = tan(x)，x范围[-π+0.1, π-0.1]。</p>
+            </div>
+            <div class="axes-grid">
+                <div class="chart-container">
+                    <h5 class="axes-title">正切函数 y = tan(x)</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise5_chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+            <a href="matplotlib-examples.html" class="btn-custom">📊 Matplotlib图形</a>
+            <a href="matplotlib-subplots.html" class="btn-custom">📐 子图与布局</a>
+            <a href="teaching-models.html" class="btn-custom">🎓 查看教学模型</a>
+            <button class="btn-custom" onclick="refreshAllCharts()">🔄 刷新图表</button>
+        </div>
+    </div>
+
+    <script>
+        // 初始化所有图表
+        function initializeAllCharts() {
+            // 练习1：定制刻度位置、格式与样式
+            const ctx1 = document.getElementById('exercise1_chart').getContext('2d');
+            // 生成时间标签：从2025-01-01 00:00开始，每2小时一个点，共25个点
+            const timeLabels = [];
+            for (let i = 0; i < 25; i++) {
+                const date = new Date(2025, 0, 1, i*2);
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const day = date.getDate().toString().padStart(2, '0');
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                timeLabels.push(`2025-${month}-${day} ${hours}:${minutes}`);
+            }
+            
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: '股票价格',
+                        data: [100.0, 100.2, 101.0, 100.5, 100.8, 102.0, 101.5, 101.8, 101.3, 100.9, 100.0, 99.5, 100.0, 99.8, 100.5, 101.2, 101.0, 101.5, 102.5, 103.0, 102.8, 102.5, 102.0, 101.5, 101.8],
+                        borderColor: 'green',
+                        backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointStyle: 'circle',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '48小时股票价格走势',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '时间',
+                                font: { weight: 'bold' }
+                            },
+                            ticks: {
+                                // 每12小时一个主刻度（即每6个数据点一个主刻度）
+                                maxTicksLimit: 5,
+                                callback: function(value, index, values) {
+                                    // 只显示能被6整除的刻度
+                                    if (index % 6 === 0) {
+                                        return timeLabels[index];
+                                    }
+                                    return '';
+                                },
+                                font: { size: 10 },
+                                rotation: 15
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '价格（元）',
+                                font: { weight: 'bold' }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 练习2：添加图内坐标轴
+            const ctx2 = document.getElementById('exercise2_chart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                    datasets: [
+                        {
+                            label: '全国总销量',
+                            data: [50, 55, 60, 65, 75, 80, 85, 90, 80, 70, 65, 70],
+                            borderColor: 'blue',
+                            backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                            borderWidth: 2,
+                            pointStyle: 'rect',
+                            pointRadius: 5,
+                            tension: 0.1
+                        },
+                        {
+                            label: '华东区销量',
+                            data: [20, 22, 25, 28, 30, 35, 38, 40, 35, 30, 28, 30],
+                            borderColor: 'red',
+                            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                            borderWidth: 2,
+                            pointStyle: 'circle',
+                            pointRadius: 5,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '全国销量与华东区销量对比',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '月份',
+                                font: { weight: 'bold' }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '销量（万件）',
+                                font: { weight: 'bold' }
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 练习3：隐藏部分轴脊
+            const ctx3 = document.getElementById('exercise3_chart').getContext('2d');
+            new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: ['Python', 'JavaScript', 'Java', 'C#', 'Go', 'TypeScript'],
+                    datasets: [{
+                        label: '得票数',
+                        data: [450, 380, 290, 180, 120, 90],
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF',
+                            '#FF9F40'
+                        ],
+                        borderColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF',
+                            '#FF9F40'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '编程语言投票数',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '得票数',
+                                font: { weight: 'bold' }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '编程语言',
+                                font: { weight: 'bold' }
+                            },
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                // 隐藏Y轴刻度线
+                                tickLength: 0
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 练习4：移动轴脊到数据中心
+            const ctx4 = document.getElementById('exercise4_chart').getContext('2d');
+            const xValues4 = [];
+            const yValues4 = [];
+            for (let x = -5; x <= 5; x += 0.1) {
+                xValues4.push(x);
+                yValues4.push(x * x);
+            }
+            
+            new Chart(ctx4, {
+                type: 'line',
+                data: {
+                    labels: xValues4,
+                    datasets: [{
+                        label: 'y = x²',
+                        data: yValues4,
+                        borderColor: '#FF6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '二次函数 y = x²',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'x',
+                                font: { weight: 'bold' }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            // 设置X轴穿过0点
+                            beginAtZero: true
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'y',
+                                font: { weight: 'bold' }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 练习5：综合定制（轴脊+刻度）
+            const ctx5 = document.getElementById('exercise5_chart').getContext('2d');
+            const xValues5 = [];
+            const yValues5 = [];
+            // x范围从-π+0.1到π-0.1，避免正切函数的奇点
+            for (let x = -Math.PI + 0.1; x <= Math.PI - 0.1; x += 0.03) {
+                xValues5.push(x);
+                yValues5.push(Math.tan(x));
+            }
+            
+            // 定义π的倍数标签
+            const piLabels = {
+                '-3.141592653589793': '-π',
+                '-1.5707963267948966': '-π/2',
+                '0': '0',
+                '1.5707963267948966': 'π/2',
+                '3.141592653589793': 'π'
+            };
+            
+            new Chart(ctx5, {
+                type: 'line',
+                data: {
+                    labels: xValues5,
+                    datasets: [{
+                        label: 'y = tan(x)',
+                        data: yValues5,
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        borderWidth: 1,
+                        tension: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '正切函数 y = tan(x)',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'x',
+                                font: { weight: 'bold' }
+                            },
+                            ticks: {
+                                // 设置特定的刻度位置
+                                callback: function(value, index, values) {
+                                    // 将值转换为字符串，与piLabels中的键比较
+                                    const valStr = value.toString();
+                                    if (piLabels[valStr]) {
+                                        return piLabels[valStr];
+                                    }
+                                    return '';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'y',
+                                font: { weight: 'bold' }
+                            },
+                            min: -4,
+                            max: 4,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 刷新所有图表
+        function refreshAllCharts() {
+            const chartIds = [
+                'exercise1_chart',
+                'exercise2_chart',
+                'exercise3_chart',
+                'exercise4_chart',
+                'exercise5_chart'
+            ];
+            
+            chartIds.forEach(id => {
+                const canvas = document.getElementById(id);
+                const chart = Chart.getChart(canvas);
+                if (chart) {
+                    chart.destroy();
+                }
+            });
+            
+            initializeAllCharts();
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAllCharts();
+        });
+    </script>
+</body>
+</html>
