@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matplotlib 高级图表 - ChenChen 数据可视化平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .chapter-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .example-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .example-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        .graph-wrapper {
+            height: 400px;
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .graph-wrapper canvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+            background: white;
+        }
+        
+        .example-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: white;
+            font-size: 1.3em;
+        }
+        
+        .btn-custom {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-custom:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .description {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+        
+        @media (max-width: 768px) {
+            .example-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .graph-wrapper {
+                height: 300px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>🗺️ Matplotlib 高级图表</h1>
+            <p class="lead">第8章：专业科学可视化图表</p>
+            <div class="button-group">
+                <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+                <button class="btn-custom" onclick="refreshAllCharts()">🔄 刷新所有图表</button>
+            </div>
+        </div>
+
+        <div class="chapter-container">
+            <h3 class="text-center mb-4">🎯 第8章高级图表实例展示</h3>
+            
+            <div class="example-grid">
+                <!-- 实例1：专业等高线图 -->
+                <div class="example-item">
+                    <h5 class="example-title">实例1：地形等高线图</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="contourChart"></canvas>
+                    </div>
+                    <div class="description">
+                        <p><strong>描述：</strong>三维地形数据的等高线表示，模拟真实山地地形</p>
+                        <p><strong>特点：</strong>等值线、地形轮廓、专业地理可视化</p>
+                    </div>
+                </div>
+
+                <!-- 实例2：棉棒图 -->
+                <div class="example-item">
+                    <h5 class="example-title">实例2：棉棒图（汽车燃料消耗）</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="stemChart"></canvas>
+                    </div>
+                    <div class="description">
+                        <p><strong>描述：</strong>不同品牌轿车燃料消耗量的离散数据对比</p>
+                        <p><strong>特点：</strong>带标记的垂直线、数据点对比</p>
+                    </div>
+                </div>
+
+                <!-- 实例3：哑铃图 -->
+                <div class="example-item">
+                    <h5 class="example-title">实例3：哑铃图（数据变化对比）</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="dumbbellChart"></canvas>
+                    </div>
+                    <div class="description">
+                        <p><strong>描述：</strong>展示两组数据之间的变化和差异对比</p>
+                        <p><strong>特点：</strong>连接线对比、变化幅度</p>
+                    </div>
+                </div>
+
+                <!-- 实例4：甘特图 -->
+                <div class="example-item">
+                    <h5 class="example-title">实例4：任务甘特图</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="ganttChart"></canvas>
+                    </div>
+                    <div class="description">
+                        <p><strong>描述：</strong>项目管理中的任务时间安排和进度可视化</p>
+                        <p><strong>特点：</strong>时间线、任务持续时间</p>
+                    </div>
+                </div>
+
+                <!-- 实例5：人口金字塔 -->
+                <div class="example-item">
+                    <h5 class="example-title">实例5：人口金字塔图</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="pyramidChart"></canvas>
+                    </div>
+                    <div class="description">
+                        <p><strong>描述：</strong>展示不同年龄段男女人口数量的对称分布</p>
+                        <p><strong>特点：</strong>年龄结构、性别对比</p>
+                    </div>
+                </div>
+
+                <!-- 实例6：漏斗图 -->
+                <div class="example-item">
+                    <h5 class="example-title">实例6：销售漏斗图</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="funnelChart"></canvas>
+                    </div>
+                    <div class="description">
+                        <p><strong>描述：</strong>客户转化流程中各环节的数量和转化率</p>
+                        <p><strong>特点：</strong>转化流程、各环节对比</p>
+                    </div>
+                </div>
+
+                <!-- 实例7：雷达图（替代树状图） -->
+                <div class="example-item">
+                    <h5 class="example-title">实例7：雷达图（聚类分析）</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                    <div class="description">
+                        <p><strong>描述：</strong>展示多维度数据的聚类分析结果</p>
+                        <p><strong>特点：</strong>多维度对比、聚类可视化</p>
+                    </div>
+                </div>
+
+                <!-- 实例8：热力图（替代等高线图） -->
+                <div class="example-item">
+                    <h5 class="example-title">实例8：热力图（地形高度）</h5>
+                    <div class="graph-wrapper">
+                        <canvas id="heatmapChart"></canvas>
+                    </div>
+                    <div class="description">
+                        <p><strong>描述：</strong>地形高度的热力图表示，颜色表示高度</p>
+                        <p><strong>特点：</strong>颜色渐变、高度可视化</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+                <a href="matplotlib-examples.html" class="btn-custom">📊 基础图形</a>
+                <a href="matplotlib-subplots.html" class="btn-custom">📐 子图布局</a>
+                <a href="matplotlib-3d-real.html" class="btn-custom">🌌 3D图形</a>
+                <button class="btn-custom" onclick="refreshAllCharts()">🔄 刷新图表</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化所有图表
+        function initializeAllCharts() {
+            // 实例1：等高线图（用折线图模拟）
+            createContourChart();
+            
+            // 实例2：棉棒图
+            createStemChart();
+            
+            // 实例3：哑铃图
+            createDumbbellChart();
+            
+            // 实例4：甘特图
+            createGanttChart();
+            
+            // 实例5：人口金字塔
+            createPyramidChart();
+            
+            // 实例6：漏斗图
+            createFunnelChart();
+            
+            // 实例7：雷达图
+            createRadarChart();
+            
+            // 实例8：热力图（用散点图模拟）
+            createHeatmapChart();
+        }
+        
+        // 1. 创建等高线图（用折线图模拟多条等高线）
+        function createContourChart() {
+            const ctx = document.getElementById('contourChart').getContext('2d');
+            
+            // 生成多组等高线数据
+            const datasets = [];
+            const colors = ['#8B4513', '#A0522D', '#CD853F', '#D2691E', '#8B4513'];
+            
+            // 创建5条不同高度的等高线
+            for (let level = 0; level < 5; level++) {
+                const data = [];
+                const height = -1 + level * 0.5; // 从-1到1的高度
+                
+                // 生成正弦波形数据模拟等高线
+                for (let x = -3; x <= 3; x += 0.1) {
+                    // 地形函数：z = sin(sqrt(x² + y²))
+                    const y = Math.sqrt(Math.max(0, 1 - x*x)) * Math.sin(height * 2);
+                    data.push({x: x, y: y + level * 0.2});
+                }
+                
+                datasets.push({
+                    label: `高度 ${height.toFixed(1)}`,
+                    data: data,
+                    borderColor: colors[level],
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 0
+                });
+            }
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '地形等高线图',
+                            font: { size: 16, weight: 'bold', color: 'black' }
+                        },
+                        legend: {
+                            labels: { color: 'black' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'X坐标',
+                                color: 'black'
+                            },
+                            ticks: { color: 'black' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Y坐标',
+                                color: 'black'
+                            },
+                            ticks: { color: 'black' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 2. 创建棉棒图
+        function createStemChart() {
+            const ctx = document.getElementById('stemChart').getContext('2d');
+            
+            const carBrands = ['宝骏310', '宝马i3', '致享', '焕驰', '力帆530'];
+            const fuelConsumption = [5.9, 6.2, 6.7, 7.0, 7.0];
+            
+            // 创建棉棒效果：垂直线+数据点
+            const datasets = [];
+            
+            // 添加垂直线
+            const stemLines = [];
+            fuelConsumption.forEach((value, index) => {
+                stemLines.push({x: index, y: 0});
+                stemLines.push({x: index, y: value});
+                stemLines.push({x: index, y: NaN}); // 断开连接
+            });
+            
+            datasets.push({
+                label: '垂直线',
+                data: stemLines,
+                borderColor: 'rgba(0, 0, 0, 0.5)',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                pointRadius: 0,
+                showLine: true,
+                tension: 0
+            });
+            
+            // 添加数据点
+            datasets.push({
+                label: '燃料消耗量(L/km)',
+                data: fuelConsumption.map((value, index) => ({x: index, y: value})),
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                pointRadius: 8,
+                pointStyle: 'circle',
+                showLine: false
+            });
+            
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    labels: carBrands,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '不同品牌轿车燃料消耗量 - 棉棒图',
+                            font: { size: 16, weight: 'bold', color: 'black' }
+                        },
+                        legend: {
+                            labels: { color: 'black' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'category',
+                            labels: carBrands,
+                            ticks: {
+                                color: 'black'
+                            },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '燃料消耗量(L/km)',
+                                color: 'black'
+                            },
+                            ticks: { color: 'black' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 3. 创建哑铃图
+        function createDumbbellChart() {
+            const ctx = document.getElementById('dumbbellChart').getContext('2d');
+            
+            const cities = ['纽约', '洛杉矶', '芝加哥', '休斯顿', '费城'];
+            const values2013 = [0.08, 0.12, 0.15, 0.10, 0.18];
+            const values2014 = [0.10, 0.15, 0.18, 0.12, 0.20];
+            
+            const datasets = [];
+            
+            // 2013年数据点
+            datasets.push({
+                label: '2013年',
+                data: values2013.map((value, index) => ({x: value, y: index})),
+                backgroundColor: 'rgba(0, 119, 190, 0.8)',
+                borderColor: 'rgba(0, 119, 190, 1)',
+                pointRadius: 10,
+                pointStyle: 'circle',
+                showLine: false
+            });
+            
+            // 2014年数据点
+            datasets.push({
+                label: '2014年',
+                data: values2014.map((value, index) => ({x: value, y: index})),
+                backgroundColor: 'rgba(163, 196, 220, 0.8)',
+                borderColor: 'rgba(163, 196, 220, 1)',
+                pointRadius: 10,
+                pointStyle: 'circle',
+                showLine: false
+            });
+            
+            // 连接线 - 为每个城市创建单独的线段
+            for (let i = 0; i < cities.length; i++) {
+                const connectionData = [
+                    {x: values2013[i], y: i},
+                    {x: values2014[i], y: i}
+                ];
+                
+                datasets.push({
+                    label: i === 0 ? '变化' : '', // 只在第一个显示图例
+                    data: connectionData,
+                    borderColor: 'rgba(135, 206, 250, 0.7)',
+                    backgroundColor: 'transparent',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    showLine: true,
+                    tension: 0
+                });
+            }
+            
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '城市指标变化对比 - 哑铃图',
+                            font: { size: 16, weight: 'bold', color: 'black' }
+                        },
+                        legend: {
+                            labels: { color: 'black' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            min: -0.5,
+                            max: cities.length - 0.5,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 0 && value < cities.length) {
+                                        return cities[Math.round(value)];
+                                    }
+                                    return '';
+                                },
+                                color: 'black'
+                            },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        x: {
+                            min: 0.05,
+                            max: 0.22,
+                            title: {
+                                display: true,
+                                text: '指标值',
+                                color: 'black'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return (value * 100).toFixed(0) + '%';
+                                },
+                                color: 'black'
+                            },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 4. 创建甘特图
+        function createGanttChart() {
+            const ctx = document.getElementById('ganttChart').getContext('2d');
+            
+            const tasks = ['项目确定', '问卷设计', '试访', '问卷确定', '实地执行'];
+            const durations = [2, 1, 1, 0.5, 3];
+            const startTimes = [0, 1.5, 2, 3, 3];
+            
+            // 创建水平条形图模拟甘特图
+            const barData = durations.map((duration, index) => ({
+                x: startTimes[index] + duration/2,
+                y: tasks.length - index - 1,
+                width: duration
+            }));
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: tasks,
+                    datasets: [{
+                        label: '任务持续时间',
+                        data: durations,
+                        backgroundColor: 'rgba(205, 92, 92, 0.8)',
+                        borderColor: 'rgba(205, 92, 92, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '项目管理甘特图',
+                            font: { size: 16, weight: 'bold', color: 'black' }
+                        },
+                        legend: {
+                            labels: { color: 'black' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function(context) {
+                                    const index = context.dataIndex;
+                                    return `开始时间: ${startTimes[index]} 单位\n结束时间: ${startTimes[index] + durations[index]} 单位`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '时间（单位）',
+                                color: 'black'
+                            },
+                            ticks: { color: 'black' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        y: {
+                            ticks: { color: 'black' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 5. 创建人口金字塔
+        function createPyramidChart() {
+            const ctx = document.getElementById('pyramidChart').getContext('2d');
+            
+            const ageGroups = ['0-9', '10-19', '20-29', '30-39', '40-49'];
+            const malePopulation = [50000, 48000, 45000, 42000, 38000];
+            const femalePopulation = [48000, 47000, 46000, 44000, 40000];
+            
+            // 将男性人口转为负值以便左右显示
+            const maleDataForChart = malePopulation.map(value => -value);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ageGroups,
+                    datasets: [
+                        {
+                            label: '男性',
+                            data: maleDataForChart,
+                            backgroundColor: 'rgba(102, 153, 255, 0.7)',
+                            borderColor: 'rgba(102, 153, 255, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '女性',
+                            data: femalePopulation,
+                            backgroundColor: 'rgba(204, 102, 153, 0.7)',
+                            borderColor: 'rgba(204, 102, 153, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '人口金字塔图 - 年龄结构分布',
+                            font: { size: 16, weight: 'bold', color: 'black' }
+                        },
+                        legend: {
+                            labels: { color: 'black' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return Math.abs(value).toLocaleString();
+                                },
+                                color: 'black'
+                            },
+                            title: {
+                                display: true,
+                                text: '人口数量',
+                                color: 'black'
+                            },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        y: {
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: '年龄段（岁）',
+                                color: 'black'
+                            },
+                            ticks: { color: 'black' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 6. 创建漏斗图
+        function createFunnelChart() {
+            const ctx = document.getElementById('funnelChart').getContext('2d');
+            
+            const stages = ['访问商品', '加购物车', '生成订单', '支付订单', '完成交易'];
+            const conversion = [1000, 500, 300, 200, 150];
+            const conversionRate = conversion.map((value, index) => 
+                ((value / conversion[0]) * 100).toFixed(1) + '%'
+            );
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: stages,
+                    datasets: [{
+                        label: '客户数量',
+                        data: conversion,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(255, 205, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(54, 162, 235, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 205, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(54, 162, 235, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '销售漏斗图 - 客户转化流程',
+                            font: { size: 16, weight: 'bold', color: 'black' }
+                        },
+                        legend: {
+                            labels: { color: 'black' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function(context) {
+                                    const index = context.dataIndex;
+                                    return `转化率: ${conversionRate[index]}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '客户数量',
+                                color: 'black'
+                            },
+                            ticks: { color: 'black' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        y: {
+                            ticks: { color: 'black' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 7. 创建雷达图（替代树状图）
+        function createRadarChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            const crimeTypes = ['谋杀案', '袭击案', '强奸案', '抢劫案', '盗窃案'];
+            const clusters = [
+                { name: '高犯罪率组', values: [15, 250, 25, 120, 400] },
+                { name: '中犯罪率组', values: [8, 180, 15, 80, 300] },
+                { name: '低犯罪率组', values: [5, 120, 8, 50, 200] }
+            ];
+            
+            const datasets = clusters.map((cluster, index) => ({
+                label: cluster.name,
+                data: cluster.values,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(75, 192, 192, 0.2)'
+                ][index],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ][index],
+                pointBackgroundColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ][index],
+                pointBorderColor: '#fff',
+                pointRadius: 4
+            }));
+            
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: crimeTypes,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '犯罪案件聚类分析 - 雷达图',
+                            font: { size: 16, weight: 'bold', color: 'black' }
+                        },
+                        legend: {
+                            labels: { color: 'black' }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'black',
+                                backdropColor: 'transparent'
+                            },
+                            pointLabels: {
+                                color: 'black'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 8. 创建热力图（用散点图模拟）
+        function createHeatmapChart() {
+            const ctx = document.getElementById('heatmapChart').getContext('2d');
+            
+            // 生成地形高度数据
+            const data = [];
+            const gridSize = 15;
+            
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const x = (i / (gridSize-1)) * 4 - 2; // -2到2
+                    const y = (j / (gridSize-1)) * 4 - 2; // -2到2
+                    
+                    // 地形高度函数
+                    const height = (1 - x/2 + Math.pow(x, 5) + Math.pow(y, 3)) * Math.exp(-x*x - y*y);
+                    
+                    data.push({
+                        x: x,
+                        y: y,
+                        height: height
+                    });
+                }
+            }
+            
+            // 根据高度设置颜色
+            const maxHeight = Math.max(...data.map(d => d.height));
+            const minHeight = Math.min(...data.map(d => d.height));
+            
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '地形高度',
+                        data: data.map(d => ({x: d.x, y: d.y})),
+                        backgroundColor: data.map(d => {
+                            // 根据高度设置渐变色（棕色到白色）
+                            const normalized = (d.height - minHeight) / (maxHeight - minHeight);
+                            const red = 139 + Math.round(116 * (1 - normalized));
+                            const green = 69 + Math.round(186 * normalized);
+                            const blue = 19 + Math.round(236 * normalized);
+                            return `rgba(${red}, ${green}, ${blue}, 0.8)`;
+                        }),
+                        pointRadius: 12,
+                        pointStyle: 'rect',
+                        borderWidth: 1,
+                        borderColor: 'rgba(0,0,0,0.2)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '地形热力图 - 高度分布',
+                            font: { size: 16, weight: 'bold', color: 'black' }
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = data[context.dataIndex];
+                                    return [
+                                        `位置: (${point.x.toFixed(2)}, ${point.y.toFixed(2)})`,
+                                        `高度: ${point.height.toFixed(3)}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'X坐标',
+                                color: 'black'
+                            },
+                            ticks: { color: 'black' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Y坐标',
+                                color: 'black'
+                            },
+                            ticks: { color: 'black' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 刷新所有图表
+        function refreshAllCharts() {
+            const chartCanvases = [
+                'contourChart', 'stemChart', 'dumbbellChart', 'ganttChart',
+                'pyramidChart', 'funnelChart', 'radarChart', 'heatmapChart'
+            ];
+            
+            chartCanvases.forEach(id => {
+                const canvas = document.getElementById(id);
+                const chart = Chart.getChart(canvas);
+                if (chart) {
+                    chart.destroy();
+                }
+            });
+            
+            initializeAllCharts();
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAllCharts();
+        });
+    </script>
+</body>
+</html>
