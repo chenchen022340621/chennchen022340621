@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据可视化综合应用 - ChenChen 数据可视化平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入three.js用于3D图形 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- 引入OrbitControls用于3D交互 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .exercise-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .exercise-title {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: white;
+            font-size: 1.8em;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+        }
+        
+        .exercise-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .chart-wrapper {
+            height: 400px;
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .chart-wrapper canvas, #animationCanvas, #flightMap, #peaks3D {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+            background: white;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .exercise-description {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+        
+        .btn-custom {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-custom:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .control-panel {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        .formula-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .exercise-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .exercise-title {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>🌟 数据可视化综合应用</h1>
+            <p class="lead">第7章：四个高级数据可视化练习</p>
+            <div class="button-group">
+                <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+                <button class="btn-custom" onclick="refreshAllVisualizations()">🔄 刷新所有可视化</button>
+            </div>
+        </div>
+
+        <!-- 习题1：3D柱形图绘制 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">习题1：3D柱形图绘制</h3>
+            <div class="exercise-description">
+                <p><strong>目标：</strong>复现参考图中的3D柱状图样式</p>
+                <p><strong>数据准备：</strong>在xOy平面的对角线位置(1,1),(2,2),(3,3),(4,4)生成4个柱子，高度为随机整数</p>
+                <p><strong>要求：</strong>设置柱子的粗细、填充颜色和边缘颜色，添加正确的坐标轴标签和标题</p>
+            </div>
+            <div class="exercise-grid">
+                <div class="chart-container">
+                    <h5 class="text-center mb-3">3D柱形图</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise1_3d"></canvas>
+                    </div>
+                    <div class="control-panel">
+                        <button class="control-btn" onclick="generateNewBars()">生成新柱子</button>
+                        <button class="control-btn" onclick="changeBarColors()">更换颜色</button>
+                        <button class="control-btn" onclick="rotate3DChart()">旋转视图</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h5 class="text-center mb-3">柱形图信息</h5>
+                    <div class="formula-box">
+                        柱子位置：(x,y) = (1,1), (2,2), (3,3), (4,4)
+                    </div>
+                    <div id="barInfo" class="exercise-description">
+                        <p><strong>柱子高度信息：</strong></p>
+                        <ul id="barHeightsList"></ul>
+                        <p><strong>当前颜色方案：</strong> <span id="colorScheme">默认</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 习题2：衰减正弦波动画 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">习题2：衰减正弦波动画</h3>
+            <div class="exercise-description">
+                <p><strong>目标：</strong>制作一个展示波形"向右推进"效果的动画</p>
+                <p><strong>数学基础：</strong>曲线方程为衰减正弦波：y = e^(-0.1x) × sin(x)</p>
+                <p><strong>动效实现：</strong>波形随帧数变化产生水平位移（相位移动）的效果</p>
+            </div>
+            <div class="exercise-grid">
+                <div class="chart-container">
+                    <h5 class="text-center mb-3">衰减正弦波动画</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="exercise2_animation"></canvas>
+                    </div>
+                    <div class="control-panel">
+                        <button class="control-btn" onclick="startAnimation()">开始动画</button>
+                        <button class="control-btn" onclick="stopAnimation()">停止动画</button>
+                        <button class="control-btn" onclick="resetAnimation()">重置动画</button>
+                        <button class="control-btn" onclick="changeAnimationSpeed()">调整速度</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h5 class="text-center mb-3">动画控制面板</h5>
+                    <div class="formula-box">
+                        y = e<sup>-0.1x</sup> × sin(x)
+                    </div>
+                    <div class="exercise-description">
+                        <p><strong>当前动画状态：</strong> <span id="animationStatus">未开始</span></p>
+                        <p><strong>相位偏移：</strong> <span id="phaseOffset">0</span></p>
+                        <p><strong>动画速度：</strong> <span id="animationSpeed">正常</span></p>
+                        <div class="mt-3">
+                            <label for="speedRange" class="form-label">速度控制:</label>
+                            <input type="range" class="form-range" id="speedRange" min="1" max="10" value="5" 
+                                   onchange="updateAnimationSpeed(this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 习题3：跨国航线地图 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">习题3：跨国航线地图</h3>
+            <div class="exercise-description">
+                <p><strong>目标：</strong>绘制从北京飞往吉隆坡的航线图</p>
+                <p><strong>地理坐标：</strong>北京(39.90°N, 116.40°E)，吉隆坡(3.13°N, 101.68°E)</p>
+                <p><strong>地图背景：</strong>使用圆柱等积投影，显示纬度南纬10°到北纬55°，经度东经60°到150°</p>
+            </div>
+            <div class="exercise-grid">
+                <div class="chart-container">
+                    <h5 class="text-center mb-3">北京-吉隆坡航线图</h5>
+                    <div class="chart-wrapper">
+                        <div id="flightMap" style="width: 100%; height: 100%; border-radius: 10px;"></div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h5 class="text-center mb-3">航线信息</h5>
+                    <div class="formula-box">
+                        北京 → 吉隆坡 大圆航线
+                    </div>
+                    <div class="exercise-description">
+                        <p><strong>起点：</strong>北京 (39.90°N, 116.40°E)</p>
+                        <p><strong>终点：</strong>吉隆坡 (3.13°N, 101.68°E)</p>
+                        <p><strong>航线距离：</strong> <span id="flightDistance">计算中...</span></p>
+                        <p><strong>航线方向：</strong>西南方向</p>
+                        <div class="mt-3">
+                            <button class="control-btn w-100" onclick="zoomInMap()">放大地图</button>
+                            <button class="control-btn w-100 mt-2" onclick="zoomOutMap()">缩小地图</button>
+                            <button class="control-btn w-100 mt-2" onclick="resetMapView()">重置视图</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 习题4：复杂函数的3D曲面展示 -->
+        <div class="exercise-container">
+            <h3 class="exercise-title">习题4：复杂函数的3D曲面展示</h3>
+            <div class="exercise-description">
+                <p><strong>目标：</strong>绘制经典的Peaks函数三维曲面</p>
+                <div class="formula-box">
+                    z = 3(1-x)²e^(-x²-(y+1)²) - 10(x/5 - x³ - y⁵)e^(-x²-y²) - 1/3 e^(-(x+1)²-y²)
+                </div>
+                <p><strong>数据范围：</strong>x, y在±3左右，调整网格采样密度使曲面光滑</p>
+                <p><strong>色彩映射：</strong>使用viridis色彩映射，添加颜色条辅助数值阅读</p>
+            </div>
+            <div class="chart-container">
+                <h5 class="text-center mb-3">Peaks函数3D曲面</h5>
+                <div class="chart-wrapper">
+                    <canvas id="peaks3D"></canvas>
+                </div>
+                <div class="control-panel">
+                    <button class="control-btn" onclick="rotatePeaksSurface()">旋转曲面</button>
+                    <button class="control-btn" onclick="changeColormap()">更换色彩</button>
+                    <button class="control-btn" onclick="toggleWireframe()">切换线框</button>
+                    <button class="control-btn" onclick="resetPeaksView()">重置视图</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+            <a href="matplotlib-examples.html" class="btn-custom">📊 Matplotlib图形</a>
+            <a href="matplotlib-subplots.html" class="btn-custom">📐 子图与布局</a>
+            <a href="teaching-models.html" class="btn-custom">🎓 教学模型</a>
+            <button class="btn-custom" onclick="refreshAllVisualizations()">🔄 刷新所有</button>
+        </div>
+    </div>
+
+    <!-- 引入Leaflet地图库 -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- 引入简单的3D图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-3d@2.0.0/dist/chartjs-chart-3d.min.js"></script>
+
+    <script>
+        // 全局变量
+        let animationId = null;
+        let phase = 0;
+        let animationSpeed = 5;
+        let animationChart = null;
+        let map = null;
+        let peaksChart = null;
+        let bars3DChart = null;
+
+        // ========== 习题1：3D柱形图绘制 ==========
+        function init3DBarchart() {
+            const ctx = document.getElementById('exercise1_3d').getContext('2d');
+            
+            // 生成随机高度
+            const barHeights = [];
+            for (let i = 0; i < 4; i++) {
+                barHeights.push(Math.floor(Math.random() * 100) + 20);
+            }
+            
+            // 更新显示信息
+            updateBarInfo(barHeights);
+            
+            // 创建3D柱状图
+            bars3DChart = new Chart(ctx, {
+                type: 'bar3d',
+                data: {
+                    labels: ['(1,1)', '(2,2)', '(3,3)', '(4,4)'],
+                    datasets: [{
+                        label: '柱子高度',
+                        data: barHeights,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '3D柱形图 - 对角线位置柱子',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'X坐标'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Y坐标'
+                            }
+                        },
+                        z: {
+                            title: {
+                                display: true,
+                                text: '柱子高度'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateBarInfo(heights) {
+            const list = document.getElementById('barHeightsList');
+            list.innerHTML = '';
+            heights.forEach((height, index) => {
+                const li = document.createElement('li');
+                li.textContent = `位置(${index+1},${index+1}): 高度 = ${height}`;
+                list.appendChild(li);
+            });
+        }
+        
+        function generateNewBars() {
+            if (bars3DChart) {
+                const newHeights = [];
+                for (let i = 0; i < 4; i++) {
+                    newHeights.push(Math.floor(Math.random() * 100) + 20);
+                }
+                bars3DChart.data.datasets[0].data = newHeights;
+                updateBarInfo(newHeights);
+                bars3DChart.update();
+            }
+        }
+        
+        function changeBarColors() {
+            if (bars3DChart) {
+                const colorSchemes = [
+                    ['rgba(255, 99, 132, 0.8)', 'rgba(54, 162, 235, 0.8)', 'rgba(255, 206, 86, 0.8)', 'rgba(75, 192, 192, 0.8)'],
+                    ['rgba(153, 102, 255, 0.8)', 'rgba(255, 159, 64, 0.8)', 'rgba(255, 99, 132, 0.8)', 'rgba(54, 162, 235, 0.8)'],
+                    ['rgba(75, 192, 192, 0.8)', 'rgba(153, 102, 255, 0.8)', 'rgba(255, 159, 64, 0.8)', 'rgba(255, 99, 132, 0.8)']
+                ];
+                
+                const randomScheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
+                bars3DChart.data.datasets[0].backgroundColor = randomScheme;
+                bars3DChart.data.datasets[0].borderColor = randomScheme.map(color => color.replace('0.8', '1'));
+                document.getElementById('colorScheme').textContent = '随机方案';
+                bars3DChart.update();
+            }
+        }
+        
+        function rotate3DChart() {
+            if (bars3DChart && bars3DChart.options.rotation) {
+                bars3DChart.options.rotation.y = (bars3DChart.options.rotation.y || 0) + 30;
+                bars3DChart.update();
+            }
+        }
+
+        // ========== 习题2：衰减正弦波动画 ==========
+        function initAnimationChart() {
+            const ctx = document.getElementById('exercise2_animation').getContext('2d');
+            
+            // 初始数据
+            const xValues = [];
+            const yValues = [];
+            const xMax = 10 * Math.PI;
+            
+            for (let x = 0; x <= xMax; x += 0.1) {
+                xValues.push(x);
+                yValues.push(Math.exp(-0.1 * x) * Math.sin(x));
+            }
+            
+            animationChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: xValues,
+                    datasets: [{
+                        label: '衰减正弦波',
+                        data: yValues,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '习题2：衰减正弦波动画',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'x'
+                            },
+                            min: 0,
+                            max: 10 * Math.PI
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'y = e^(-0.1x) × sin(x)'
+                            },
+                            min: -1.2,
+                            max: 1.2
+                        }
+                    },
+                    animation: {
+                        duration: 0
+                    }
+                }
+            });
+        }
+        
+        function startAnimation() {
+            if (animationId) return; // 防止重复启动
+            
+            document.getElementById('animationStatus').textContent = '播放中';
+            
+            function animate() {
+                phase += 0.05 * (animationSpeed / 5);
+                
+                // 更新相位偏移显示
+                document.getElementById('phaseOffset').textContent = phase.toFixed(2);
+                
+                // 更新图表数据
+                const xValues = [];
+                const yValues = [];
+                const xMax = 10 * Math.PI;
+                
+                for (let x = 0; x <= xMax; x += 0.1) {
+                    xValues.push(x);
+                    yValues.push(Math.exp(-0.1 * x) * Math.sin(x + phase));
+                }
+                
+                animationChart.data.labels = xValues;
+                animationChart.data.datasets[0].data = yValues;
+                animationChart.update('none');
+                
+                animationId = requestAnimationFrame(animate);
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        function stopAnimation() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+                document.getElementById('animationStatus').textContent = '已停止';
+            }
+        }
+        
+        function resetAnimation() {
+            stopAnimation();
+            phase = 0;
+            document.getElementById('phaseOffset').textContent = '0';
+            document.getElementById('animationStatus').textContent = '已重置';
+            
+            // 重置为原始数据
+            const xValues = [];
+            const yValues = [];
+            const xMax = 10 * Math.PI;
+            
+            for (let x = 0; x <= xMax; x += 0.1) {
+                xValues.push(x);
+                yValues.push(Math.exp(-0.1 * x) * Math.sin(x));
+            }
+            
+            animationChart.data.labels = xValues;
+            animationChart.data.datasets[0].data = yValues;
+            animationChart.update();
+        }
+        
+        function changeAnimationSpeed() {
+            const speeds = ['慢速', '正常', '快速', '极快'];
+            const speedValues = [2, 5, 8, 10];
+            
+            const currentIndex = speedValues.indexOf(animationSpeed);
+            const nextIndex = (currentIndex + 1) % speeds.length;
+            
+            animationSpeed = speedValues[nextIndex];
+            document.getElementById('animationSpeed').textContent = speeds[nextIndex];
+        }
+        
+        function updateAnimationSpeed(value) {
+            animationSpeed = parseInt(value);
+            const speeds = ['极慢', '很慢', '慢', '较慢', '正常', '较快', '快', '很快', '极快', '超快'];
+            document.getElementById('animationSpeed').textContent = speeds[value - 1];
+        }
+
+        // ========== 习题3：跨国航线地图 ==========
+        function initFlightMap() {
+            // 初始化地图
+            map = L.map('flightMap').setView([20, 110], 3);
+            
+            // 添加地图图层
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // 北京和吉隆坡坐标
+            const beijing = [39.90, 116.40];
+            const kualaLumpur = [3.13, 101.68];
+            
+            // 添加标记
+            const beijingMarker = L.marker(beijing).addTo(map)
+                .bindPopup('<b>北京</b><br>中国首都')
+                .openPopup();
+            
+            const klMarker = L.marker(kualaLumpur).addTo(map)
+                .bindPopup('<b>吉隆坡</b><br>马来西亚首都');
+            
+            // 添加中文标签
+            L.marker(beijing).addTo(map)
+                .bindTooltip('北京', {permanent: true, direction: 'right', className: 'map-label'});
+            
+            L.marker(kualaLumpur).addTo(map)
+                .bindTooltip('吉隆坡', {permanent: true, direction: 'right', className: 'map-label'});
+            
+            // 绘制航线（使用直线简化）
+            const flightPath = L.polyline([beijing, kualaLumpur], {
+                color: 'blue',
+                weight: 3,
+                opacity: 0.7,
+                dashArray: '10, 10'
+            }).addTo(map);
+            
+            // 计算距离（简化的大圆距离计算）
+            const distance = calculateDistance(beijing[0], beijing[1], kualaLumpur[0], kualaLumpur[1]);
+            document.getElementById('flightDistance').textContent = distance.toFixed(0) + ' 公里';
+            
+            // 设置地图边界
+            map.setMaxBounds([[10, 60], [55, 150]]);
+        }
+        
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            // 简化的距离计算（实际应该使用Haversine公式）
+            const R = 6371; // 地球半径（公里）
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+        
+        function zoomInMap() {
+            if (map) map.zoomIn();
+        }
+        
+        function zoomOutMap() {
+            if (map) map.zoomOut();
+        }
+        
+        function resetMapView() {
+            if (map) map.setView([20, 110], 3);
+        }
+
+        // ========== 习题4：复杂函数的3D曲面展示 ==========
+        function initPeaks3D() {
+            const canvas = document.getElementById('peaks3D');
+            const ctx = canvas.getContext('2d');
+            
+            // 生成Peaks函数数据
+            const size = 30;
+            const data = [];
+            
+            for (let i = 0; i < size; i++) {
+                data[i] = [];
+                for (let j = 0; j < size; j++) {
+                    const x = (i / size) * 6 - 3;
+                    const y = (j / size) * 6 - 3;
+                    data[i][j] = peaksFunction(x, y);
+                }
+            }
+            
+            // 创建3D曲面图
+            peaksChart = new Chart(ctx, {
+                type: 'surface',
+                data: {
+                    datasets: [{
+                        label: 'Peaks函数',
+                        data: data,
+                        backgroundColor: 'viridis'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Peaks函数3D曲面',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'X轴'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Y轴'
+                            }
+                        },
+                        z: {
+                            title: {
+                                display: true,
+                                text: 'Z值'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function peaksFunction(x, y) {
+            // Peaks函数
+            return 3 * Math.pow(1 - x, 2) * Math.exp(-Math.pow(x, 2) - Math.pow(y + 1, 2)) -
+                   10 * (x/5 - Math.pow(x, 3) - Math.pow(y, 5)) * Math.exp(-Math.pow(x, 2) - Math.pow(y, 2)) -
+                   (1/3) * Math.exp(-Math.pow(x + 1, 2) - Math.pow(y, 2));
+        }
+        
+        function rotatePeaksSurface() {
+            if (peaksChart && peaksChart.options.rotation) {
+                peaksChart.options.rotation.y = (peaksChart.options.rotation.y || 0) + 30;
+                peaksChart.update();
+            }
+        }
+        
+        function changeColormap() {
+            if (peaksChart) {
+                const colormaps = ['viridis', 'plasma', 'inferno', 'magma', 'coolwarm'];
+                const current = peaksChart.data.datasets[0].backgroundColor;
+                const currentIndex = colormaps.indexOf(current);
+                const nextIndex = (currentIndex + 1) % colormaps.length;
+                
+                peaksChart.data.datasets[0].backgroundColor = colormaps[nextIndex];
+                peaksChart.update();
+            }
+        }
+        
+        function toggleWireframe() {
+            if (peaksChart) {
+                const current = peaksChart.data.datasets[0].wireframe || false;
+                peaksChart.data.datasets[0].wireframe = !current;
+                peaksChart.update();
+            }
+        }
+        
+        function resetPeaksView() {
+            if (peaksChart && peaksChart.options.rotation) {
+                peaksChart.options.rotation = { x: 20, y: 20, z: 0 };
+                peaksChart.update();
+            }
+        }
+
+        // ========== 初始化所有可视化 ==========
+        function initializeAllVisualizations() {
+            // 初始化习题1
+            init3DBarchart();
+            
+            // 初始化习题2
+            initAnimationChart();
+            
+            // 初始化习题3
+            setTimeout(initFlightMap, 100); // 给地图容器一点时间加载
+            
+            // 初始化习题4
+            initPeaks3D();
+        }
+        
+        function refreshAllVisualizations() {
+            // 停止动画
+            stopAnimation();
+            
+            // 销毁所有图表
+            if (bars3DChart) {
+                bars3DChart.destroy();
+                bars3DChart = null;
+            }
+            
+            if (animationChart) {
+                animationChart.destroy();
+                animationChart = null;
+            }
+            
+            if (peaksChart) {
+                peaksChart.destroy();
+                peaksChart = null;
+            }
+            
+            // 移除地图
+            if (map) {
+                map.remove();
+                map = null;
+            }
+            
+            // 重新初始化
+            initializeAllVisualizations();
+            
+            // 更新状态
+            document.getElementById('animationStatus').textContent = '已刷新';
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAllVisualizations();
+            
+            // 添加地图标签样式
+            const style = document.createElement('style');
+            style.textContent = `
+                .map-label {
+                    background: rgba(255, 255, 255, 0.8);
+                    border: 1px solid #333;
+                    border-radius: 3px;
+                    padding: 2px 5px;
+                    font-weight: bold;
+                    color: #333;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
