@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matplotlib 3D图形与动画 - ChenChen 数据可视化平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/libs/stats.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .chapter-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .example-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .example-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        .graph-wrapper {
+            height: 400px;
+            position: relative;
+            margin: 15px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            background: black;
+        }
+        
+        .example-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: white;
+            font-size: 1.3em;
+        }
+        
+        .btn-custom {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .btn-custom:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .controls {
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        @media (max-width: 768px) {
+            .example-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .graph-wrapper {
+                height: 300px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>🌌 Matplotlib 3D图形与动画</h1>
+            <p class="lead">第7章：真正的三维可视化与动画展示</p>
+            <div class="button-group">
+                <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+                <button class="btn-custom" onclick="refreshAllScenes()">🔄 刷新所有场景</button>
+                <button class="btn-custom" onclick="startAllAnimations()">🎬 开始所有动画</button>
+                <button class="btn-custom" onclick="stopAllAnimations()">⏸️ 停止所有动画</button>
+            </div>
+        </div>
+
+        <div class="chapter-container">
+            <h3 class="text-center mb-4">🎬 第7章实例展示 - 真正的3D效果</h3>
+            
+            <div class="example-grid">
+                <!-- 实例1：3D散点图（彩色星星） -->
+                <div class="example-item">
+                    <h5 class="example-title">实例1：3D散点图 - 彩色星星</h5>
+                    <div class="graph-wrapper" id="scene1"></div>
+                    <div class="controls">
+                        <button class="control-btn" onclick="toggleRotation('scene1')">旋转/停止</button>
+                        <button class="control-btn" onclick="resetView('scene1')">重置视角</button>
+                    </div>
+                </div>
+
+                <!-- 实例2：3D线框图 -->
+                <div class="example-item">
+                    <h5 class="example-title">实例2：3D线框图</h5>
+                    <div class="graph-wrapper" id="scene2"></div>
+                    <div class="controls">
+                        <button class="control-btn" onclick="toggleRotation('scene2')">旋转/停止</button>
+                        <button class="control-btn" onclick="resetView('scene2')">重置视角</button>
+                    </div>
+                </div>
+
+                <!-- 实例3：3D曲面图 -->
+                <div class="example-item">
+                    <h5 class="example-title">实例3：3D曲面图（正弦曲面）</h5>
+                    <div class="graph-wrapper" id="scene3"></div>
+                    <div class="controls">
+                        <button class="control-btn" onclick="toggleRotation('scene3')">旋转/停止</button>
+                        <button class="control-btn" onclick="resetView('scene3')">重置视角</button>
+                    </div>
+                </div>
+
+                <!-- 实例4：闪烁星星动画 -->
+                <div class="example-item">
+                    <h5 class="example-title">实例4：闪烁的3D星星动画</h5>
+                    <div class="graph-wrapper" id="scene4"></div>
+                    <div class="controls">
+                        <button class="control-btn" onclick="toggleTwinkle('scene4')">闪烁/停止</button>
+                        <button class="control-btn" onclick="resetView('scene4')">重置视角</button>
+                    </div>
+                </div>
+
+                <!-- 实例5：正弦波动画 -->
+                <div class="example-item">
+                    <h5 class="example-title">实例5：3D正弦波动画</h5>
+                    <div class="graph-wrapper" id="scene5"></div>
+                    <div class="controls">
+                        <button class="control-btn" onclick="toggleWave('scene5')">波动/停止</button>
+                        <button class="control-btn" onclick="resetView('scene5')">重置视角</button>
+                    </div>
+                </div>
+
+                <!-- 实例6：地理分布3D -->
+                <div class="example-item">
+                    <h5 class="example-title">实例6：3D地理分布图</h5>
+                    <div class="graph-wrapper" id="scene6"></div>
+                    <div class="controls">
+                        <button class="control-btn" onclick="toggleRotation('scene6')">旋转/停止</button>
+                        <button class="control-btn" onclick="resetView('scene6')">重置视角</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <a href="index.html" class="btn-custom">🏠 返回主页面</a>
+                <a href="matplotlib-examples.html" class="btn-custom">📊 基础图形</a>
+                <a href="matplotlib-subplots.html" class="btn-custom">📐 子图布局</a>
+                <button class="btn-custom" onclick="refreshAllScenes()">🔄 刷新场景</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量存储场景和动画
+        const scenes = {};
+        const animations = {};
+        const rotationStates = {};
+        
+        // 初始化所有3D场景
+        function initializeAllScenes() {
+            // 实例1：3D散点图（彩色星星）
+            createScatterScene('scene1');
+            
+            // 实例2：3D线框图
+            createWireframeScene('scene2');
+            
+            // 实例3：3D曲面图
+            createSurfaceScene('scene3');
+            
+            // 实例4：闪烁星星动画
+            createTwinklingStarsScene('scene4');
+            
+            // 实例5：正弦波动画
+            createWaveScene('scene5');
+            
+            // 实例6：地理分布3D
+            createGeoScene('scene6');
+            
+            // 开始动画循环
+            animate();
+        }
+        
+        // 创建基础3D场景
+        function createBaseScene(containerId) {
+            const container = document.getElementById(containerId);
+            
+            // 创建场景
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            
+            // 创建相机
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 50;
+            
+            // 创建渲染器
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+            
+            // 添加轨道控制
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            
+            // 添加光照
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(1, 1, 1);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // 添加坐标轴
+            const axesHelper = new THREE.AxesHelper(20);
+            scene.add(axesHelper);
+            
+            // 存储场景信息
+            scenes[containerId] = {
+                scene: scene,
+                camera: camera,
+                renderer: renderer,
+                controls: controls,
+                objects: [],
+                animations: []
+            };
+            
+            rotationStates[containerId] = true;
+            
+            // 窗口大小调整
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+            
+            return scenes[containerId];
+        }
+        
+        // 创建3D散点图
+        function createScatterScene(containerId) {
+            const sceneData = createBaseScene(containerId);
+            const scene = sceneData.scene;
+            
+            // 创建星星几何体
+            const starGeometry = new THREE.SphereGeometry(0.5, 8, 8);
+            
+            // 生成30个随机星星
+            for (let i = 0; i < 30; i++) {
+                const x = (Math.random() - 0.5) * 40;
+                const y = (Math.random() - 0.5) * 40;
+                const z = (Math.random() - 0.5) * 40;
+                
+                // 根据z值确定颜色
+                let color;
+                if (z < -5) {
+                    color = 0xFFFF00; // 黄色
+                } else if (z < 5) {
+                    color = 0xC71585; // 紫色
+                } else {
+                    color = 0x008B8B; // 青色
+                }
+                
+                const material = new THREE.MeshPhongMaterial({ 
+                    color: color,
+                    shininess: 100,
+                    emissive: color,
+                    emissiveIntensity: 0.2
+                });
+                
+                const star = new THREE.Mesh(starGeometry, material);
+                star.position.set(x, y, z);
+                
+                // 添加星光效果
+                const pointLight = new THREE.PointLight(color, 1, 10);
+                pointLight.position.set(x, y, z);
+                scene.add(pointLight);
+                
+                scene.add(star);
+                sceneData.objects.push({ star, pointLight });
+            }
+            
+            // 添加动画
+            sceneData.animations.push(() => {
+                if (rotationStates[containerId]) {
+                    sceneData.objects.forEach((obj, i) => {
+                        obj.star.rotation.y += 0.02;
+                        obj.star.rotation.x += 0.01;
+                    });
+                }
+            });
+        }
+        
+        // 创建3D线框图
+        function createWireframeScene(containerId) {
+            const sceneData = createBaseScene(containerId);
+            const scene = sceneData.scene;
+            
+            // 创建曲面几何体
+            const geometry = new THREE.ParametricGeometry((u, v, target) => {
+                const x = (u - 0.5) * 20;
+                const y = (v - 0.5) * 20;
+                const z = Math.sin(Math.sqrt(x*x + y*y) * 0.5) * 5;
+                target.set(x, y, z);
+            }, 20, 20);
+            
+            // 线框材质
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0x00ffff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+            sceneData.objects.push(mesh);
+            
+            // 添加动画
+            sceneData.animations.push(() => {
+                if (rotationStates[containerId]) {
+                    mesh.rotation.y += 0.01;
+                    mesh.rotation.x += 0.005;
+                }
+            });
+        }
+        
+        // 创建3D曲面图
+        function createSurfaceScene(containerId) {
+            const sceneData = createBaseScene(containerId);
+            const scene = sceneData.scene;
+            
+            // 创建曲面几何体
+            const geometry = new THREE.ParametricGeometry((u, v, target) => {
+                const x = (u - 0.5) * 20;
+                const y = (v - 0.5) * 20;
+                const z = Math.sin(Math.sqrt(x*x + y*y) * 0.5) * 5;
+                target.set(x, y, z);
+            }, 30, 30);
+            
+            // 创建颜色渐变
+            const colors = [];
+            const positions = geometry.attributes.position.array;
+            for (let i = 0; i < positions.length; i += 3) {
+                const z = positions[i + 2];
+                const normalizedZ = (z + 5) / 10; // 归一化到0-1
+                colors.push(normalizedZ, 0.5, 1 - normalizedZ);
+            }
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            
+            // 曲面材质
+            const material = new THREE.MeshPhongMaterial({ 
+                vertexColors: true,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.9,
+                shininess: 100
+            });
+            
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+            sceneData.objects.push(mesh);
+            
+            // 添加动画
+            sceneData.animations.push(() => {
+                if (rotationStates[containerId]) {
+                    mesh.rotation.y += 0.005;
+                }
+            });
+        }
+        
+        // 创建闪烁星星动画
+        function createTwinklingStarsScene(containerId) {
+            const sceneData = createBaseScene(containerId);
+            const scene = sceneData.scene;
+            
+            // 星星位置数据（使用您提供的精确数据）
+            const xx = [13, 5, 25, 13, 9, 19, 3, 39, 13, 27];
+            const yy = [4, 38, 16, 26, 7, 19, 28, 10, 17, 18];
+            const zz = [7, 19, 6, 12, 25, 19, 23, 25, 10, 15];
+            
+            const stars = [];
+            const starGeometry = new THREE.SphereGeometry(1, 16, 16);
+            
+            // 创建星星
+            for (let i = 0; i < xx.length; i++) {
+                const x = (xx[i] - 20) / 2;
+                const y = (yy[i] - 20) / 2;
+                const z = (zz[i] - 10) / 2;
+                
+                const material = new THREE.MeshPhongMaterial({ 
+                    color: 0xC71585,
+                    emissive: 0xC71585,
+                    emissiveIntensity: 0.5,
+                    shininess: 100
+                });
+                
+                const star = new THREE.Mesh(starGeometry, material);
+                star.position.set(x, y, z);
+                
+                // 添加点光源实现发光效果
+                const pointLight = new THREE.PointLight(0xC71585, 2, 20);
+                pointLight.position.set(x, y, z);
+                
+                scene.add(star);
+                scene.add(pointLight);
+                
+                stars.push({ mesh: star, light: pointLight, originalColor: 0xC71585 });
+            }
+            
+            sceneData.objects = stars;
+            sceneData.twinkleState = 0;
+            
+            // 闪烁动画
+            sceneData.animations.push(() => {
+                sceneData.twinkleState += 0.05;
+                
+                stars.forEach((star, i) => {
+                    // 闪烁效果
+                    const intensity = 0.5 + 0.5 * Math.sin(sceneData.twinkleState + i);
+                    
+                    // 更新材质
+                    star.mesh.material.emissiveIntensity = intensity;
+                    star.mesh.material.opacity = 0.5 + intensity * 0.5;
+                    
+                    // 更新灯光
+                    star.light.intensity = intensity * 2;
+                    
+                    // 旋转
+                    star.mesh.rotation.y += 0.02;
+                    star.mesh.rotation.x += 0.01;
+                });
+            });
+        }
+        
+        // 创建正弦波动画
+        function createWaveScene(containerId) {
+            const sceneData = createBaseScene(containerId);
+            const scene = sceneData.scene;
+            
+            // 创建平面波浪几何体
+            const width = 30;
+            const height = 30;
+            const widthSegments = 30;
+            const heightSegments = 30;
+            
+            const geometry = new THREE.PlaneGeometry(width, height, widthSegments, heightSegments);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x4169E1,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8,
+                wireframe: false
+            });
+            
+            const plane = new THREE.Mesh(geometry, material);
+            plane.rotation.x = -Math.PI / 2;
+            scene.add(plane);
+            
+            sceneData.plane = plane;
+            sceneData.waveTime = 0;
+            
+            // 波浪动画
+            sceneData.animations.push(() => {
+                sceneData.waveTime += 0.1;
+                
+                const positions = geometry.attributes.position.array;
+                for (let i = 0; i < positions.length; i += 3) {
+                    const x = positions[i];
+                    const y = positions[i + 1];
+                    
+                    // 正弦波函数
+                    const wave1 = Math.sin((x + sceneData.waveTime) * 0.5) * 2;
+                    const wave2 = Math.cos((y + sceneData.waveTime) * 0.3) * 1.5;
+                    const wave3 = Math.sin(Math.sqrt(x*x + y*y) * 0.2 + sceneData.waveTime) * 3;
+                    
+                    positions[i + 2] = wave1 + wave2 + wave3;
+                }
+                
+                geometry.attributes.position.needsUpdate = true;
+                geometry.computeVertexNormals();
+                
+                // 缓慢旋转
+                if (rotationStates[containerId]) {
+                    plane.rotation.z += 0.002;
+                }
+            });
+        }
+        
+        // 创建3D地理分布图
+        function createGeoScene(containerId) {
+            const sceneData = createBaseScene(containerId);
+            const scene = sceneData.scene;
+            
+            // 创建地球
+            const earthGeometry = new THREE.SphereGeometry(10, 32, 32);
+            const earthMaterial = new THREE.MeshPhongMaterial({
+                color: 0x2233ff,
+                specular: 0x555555,
+                shininess: 30
+            });
+            const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+            scene.add(earth);
+            
+            // 添加城市点
+            const cities = [];
+            for (let i = 0; i < 20; i++) {
+                const lat = Math.random() * Math.PI - Math.PI/2;
+                const lon = Math.random() * 2 * Math.PI;
+                const radius = 10.5; // 稍微在地球表面外
+                
+                const x = radius * Math.cos(lat) * Math.cos(lon);
+                const y = radius * Math.sin(lat);
+                const z = radius * Math.cos(lat) * Math.sin(lon);
+                
+                // 城市点
+                const cityGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+                const cityMaterial = new THREE.MeshPhongMaterial({ 
+                    color: 0xff4500,
+                    emissive: 0xff4500,
+                    emissiveIntensity: 0.5
+                });
+                const city = new THREE.Mesh(cityGeometry, cityMaterial);
+                city.position.set(x, y, z);
+                
+                // 连线到地球表面
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(x, y, z),
+                    new THREE.Vector3(x * 0.9, y * 0.9, z * 0.9)
+                ]);
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+                
+                scene.add(city);
+                scene.add(line);
+                
+                cities.push({ city, line });
+            }
+            
+            sceneData.objects = [earth, ...cities];
+            
+            // 添加动画
+            sceneData.animations.push(() => {
+                if (rotationStates[containerId]) {
+                    earth.rotation.y += 0.005;
+                    
+                    // 城市点动画
+                    cities.forEach((city, i) => {
+                        city.city.position.y += Math.sin(Date.now() * 0.001 + i) * 0.01;
+                    });
+                }
+            });
+        }
+        
+        // 主动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // 更新所有场景
+            Object.keys(scenes).forEach(containerId => {
+                const sceneData = scenes[containerId];
+                
+                // 运行动画
+                sceneData.animations.forEach(animation => animation());
+                
+                // 更新控制
+                sceneData.controls.update();
+                
+                // 渲染
+                sceneData.renderer.render(sceneData.scene, sceneData.camera);
+            });
+        }
+        
+        // 切换旋转状态
+        function toggleRotation(containerId) {
+            rotationStates[containerId] = !rotationStates[containerId];
+        }
+        
+        // 切换闪烁状态
+        function toggleTwinkle(containerId) {
+            const sceneData = scenes[containerId];
+            if (sceneData) {
+                sceneData.twinkleEnabled = !sceneData.twinkleEnabled;
+            }
+        }
+        
+        // 切换波浪状态
+        function toggleWave(containerId) {
+            const sceneData = scenes[containerId];
+            if (sceneData) {
+                sceneData.waveEnabled = !sceneData.waveEnabled;
+            }
+        }
+        
+        // 重置视角
+        function resetView(containerId) {
+            const sceneData = scenes[containerId];
+            if (sceneData) {
+                sceneData.controls.reset();
+                sceneData.camera.position.z = 50;
+            }
+        }
+        
+        // 开始所有动画
+        function startAllAnimations() {
+            Object.keys(scenes).forEach(containerId => {
+                rotationStates[containerId] = true;
+            });
+        }
+        
+        // 停止所有动画
+        function stopAllAnimations() {
+            Object.keys(scenes).forEach(containerId => {
+                rotationStates[containerId] = false;
+            });
+        }
+        
+        // 刷新所有场景
+        function refreshAllScenes() {
+            // 清除所有场景
+            Object.keys(scenes).forEach(containerId => {
+                const sceneData = scenes[containerId];
+                const container = document.getElementById(containerId);
+                
+                // 移除渲染器
+                if (sceneData.renderer.domElement.parentNode === container) {
+                    container.removeChild(sceneData.renderer.domElement);
+                }
+                
+                // 清理Three.js资源
+                sceneData.scene.traverse(object => {
+                    if (object.geometry) object.geometry.dispose();
+                    if (object.material) {
+                        if (Array.isArray(object.material)) {
+                            object.material.forEach(material => material.dispose());
+                        } else {
+                            object.material.dispose();
+                        }
+                    }
+                });
+            });
+            
+            // 重置变量
+            Object.keys(scenes).forEach(containerId => {
+                delete scenes[containerId];
+                delete rotationStates[containerId];
+            });
+            
+            // 重新初始化
+            initializeAllScenes();
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAllScenes();
+        });
+    </script>
+</body>
+</html>
